@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Esma-ül Hüsna Zikir Takibi</title>
+    
+    <!-- PWA Gerekli Alanlar -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1b4332">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/pwabuilder/assets/main/icon-512x512.png">
+
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Amiri:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1b4332;
+            --primary-light: #2d6a4f;
+            --accent: #52b788;
+            --bg: #f8faf8;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --success-bg: #d8f3dc;
+            --success-border: #95d5b2;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            padding: 16px;
+            max-width: 500px;
+            margin: 0 auto;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            padding: 24px 20px;
+            border-radius: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 20px rgba(27, 67, 50, 0.15);
+        }
+
+        header h1 {
+            font-size: 1.4rem;
+            margin-bottom: 6px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        header p {
+            font-size: 0.85rem;
+            opacity: 0.85;
+        }
+
+        .progress-box {
+            background: white;
+            padding: 14px 20px;
+            border-radius: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            border: 1px solid #edf2f7;
+        }
+
+        .progress-text {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .progress-text span {
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .btn-reset {
+            background: #f1f5f9;
+            border: none;
+            color: #ef4444;
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-reset:active {
+            background: #e2e8f0;
+        }
+
+        .main-card {
+            background: var(--card-bg);
+            border-radius: 24px;
+            padding: 28px 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+            margin-bottom: 16px;
+            border: 2px solid #e2e8f0;
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .main-card.completed {
+            background-color: var(--success-bg);
+            border-color: var(--success-border);
+        }
+
+        .esma-badge {
+            display: inline-block;
+            background: var(--bg);
+            color: var(--primary);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .main-card.completed .esma-badge {
+            background: var(--primary);
+            color: white;
+        }
+
+        .esma-title {
+            font-size: 2.2rem;
+            color: var(--primary);
+            font-weight: 700;
+            margin-bottom: 4px;
+            letter-spacing: -0.5px;
+        }
+
+        .esma-arabic {
+            font-family: 'Amiri', serif;
+            font-size: 2rem;
+            color: var(--primary-light);
+            margin-bottom: 12px;
+            direction: rtl;
+        }
+
+        .main-card.completed .esma-arabic {
+            color: #1b4332;
+        }
+
+        .esma-count-badge {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--primary-light);
+            background: #e8f5e9;
+            padding: 6px 16px;
+            border-radius: 30px;
+            display: inline-block;
+            margin-bottom: 14px;
+        }
+
+        .main-card.completed .esma-count-badge {
+            background: #ffffff;
+            color: #1b4332;
+        }
+
+        .esma-desc {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+            margin-bottom: 16px;
+            padding: 0 10px;
+        }
+
+        .main-card.completed .esma-desc {
+            color: #2d6a4f;
+        }
+
+        .completion-date {
+            font-size: 0.8rem;
+            color: var(--primary-light);
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: none;
+        }
+
+        .main-card.completed .completion-date {
+            display: block;
+        }
+
+        .btn-action {
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 16px;
+            border-radius: 14px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(27, 67, 50, 0.2);
+            transition: transform 0.1s, background 0.2s;
+        }
+
+        .btn-action:active {
+            transform: scale(0.98);
+        }
+
+        .main-card.completed .btn-action {
+            background: #2d6a4f;
+        }
+
+        .next-preview {
+            background: white;
+            border-radius: 16px;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            border: 1px solid #edf2f7;
+            margin-top: auto;
+        }
+
+        .next-info span {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+        }
+
+        .next-info h4 {
+            font-size: 1.05rem;
+            color: var(--text-main);
+            font-weight: 700;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .btn-nav {
+            flex: 1;
+            background: white;
+            border: 1px solid #cbd5e1;
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-main);
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Esma-ül Hüsna Zikir Takibi</h1>
+        <p>Her esma için özel zikir adediyle huzurlu takip</p>
+    </header>
+
+    <div class="progress-box">
+        <div class="progress-text">Tamamlanan: <span id="completedCount">0</span> / 99</div>
+        <button class="btn-reset" onclick="resetAll()">Sıfırla</button>
+    </div>
+
+    <div id="cardContainer"></div>
+
+    <div class="next-preview" id="nextPreviewBox">
+        <div class="next-info">
+            <span>Sıradaki Esma</span>
+            <h4 id="nextName">-</h4>
+        </div>
+    </div>
+
+    <div class="nav-buttons">
+        <button class="btn-nav" onclick="changeIndex(-1)">Önceki</button>
+        <button class="btn-nav" onclick="changeIndex(1)">Sonraki</button>
+    </div>
+
+    <script>
+        const esmalar = [
+            { id: 1, name: "Yâ Allah", arabic: "الله", count: "1448", desc: "Kendinden başka ilah olmayan tek yaratıcı" },
+            { id: 2, name: "Yâ Rahmân", arabic: "الرحمن", count: "1448", desc: "Dünyada tüm meyvelere, herkese merhamet eden" },
+            { id: 3, name: "Yâ Rahîm", arabic: "الرحيم", count: "1448", desc: "Ahirette sadece müminlere merhamet eden" },
+            { id: 4, name: "Yâ Melik", arabic: "الملك", count: "1448", desc: "Mülkün ve kainatın sahibi, mutlak hükümdar" },
+            { id: 5, name: "Yâ Kuddûs", arabic: "القدوس", count: "1448", desc: "Her türlü eksiklikten ve kusurdan uzak, pak" },
+            { id: 6, name: "Yâ Selâm", arabic: "السلام", count: "1448", desc: "Güven veren, esenliğe çıkaran, kurtuluş kaynağı" },
+            { id: 7, name: "Yâ Mü'min", arabic: "المؤمن", count: "1448", desc: "Güven veren, iman aşılayan, koruyup kollayan" },
+            { id: 8, name: "Yâ Müheymin", arabic: "المهيمن", count: "1448", desc: "Her şeyi görüp gözeten, her şeye şahit olan" },
+            { id: 9, name: "Yâ Azîz", arabic: "العزيز", count: "1448", desc: "İzzet sahibi, mağlup edilmesi imkansız güçlü" },
+            { id: 10, name: "Yâ Cebbâr", arabic: "الجبار", count: "1448", desc: "Dilediğini yapan, kırıkları onaran, azamet sahibi" },
+            { id: 11, name: "Yâ Mütekebbir", arabic: "المتكبر", count: "1448", desc: "Büyüklükte eşi benzeri olmayan, ululuk sahibi" },
+            { id: 12, name: "Yâ Hâlık", arabic: "الخالق", count: "1448", desc: "Yoktan var eden, yaratıcı" },
+            { id: 13, name: "Yâ Bâri'", arabic: "البارئ", count: "1448", desc: "Kusursuz ve uyumlu bir şekilde yaratan" },
+            { id: 14, name: "Yâ Musavvir", arabic: "المصور", count: "1448", desc: "Suret veren, her şeye şekil ve özellik veren" },
+            { id: 15, name: "Yâ Gaffâr", arabic: "الغفار", count: "1448", desc: "Günahları örten ve mağfireti çok olan" },
+            { id: 16, name: "Yâ Kahhâr", arabic: "القهار", count: "1448", desc: "Her şeye ve herkese galip gelen, kahredici güç" },
+            { id: 17, name: "Yâ Vehhâb", arabic: "الوهاب", count: "1448", desc: "Karşılıksız bol bol bağışlayan, ikram eden" },
+            { id: 18, name: "Yâ Rezzâk", arabic: "الرزاق", count: "1448", desc: "Her türlü rızkı veren ve yaratan" },
+            { id: 19, name: "Yâ Fettâh", arabic: "الفتاح", count: "1448", desc: "Her türlü zorluğu açan, rahmet kapılarını aralayan" },
+            { id: 20, name: "Yâ Alîm", arabic: "العليم", count: "1448", desc: "Her şeyi en ince detayına kadar bilen" },
+            { id: 21, name: "Yâ Kâbid", arabic: "القابض", count: "1448", desc: "Dilediğinin rızkını daraltan, ruhları alan" },
+            { id: 22, name: "Yâ Bāsit", arabic: "الباسط", count: "1448", desc: "Dilediğinin rızkını genişleten, ferahlık veren" },
+            { id: 23, name: "Yâ Hâfid", arabic: "الخافض", count: "1448", desc: "Kafirleri ve gururluları alçaltan" },
+            { id: 24, name: "Yâ Râfi'", arabic: "الرافع", count: "1448", desc: "Şeref veren, dereceyi yükselten" },
+            { id: 25, name: "Yâ Muiz", arabic: "المعز", count: "1448", desc: "Dilediğini aziz kılan, onurlandıran" },
+            { id: 26, name: "Yâ Müzill", arabic: "المذل", count: "1448", desc: "Dilediğini zillete düşüren, hor kılan" },
+            { id: 27, name: "Yâ Semî'", arabic: "السميع", count: "1448", desc: "Her şeyi en iyi işiten" },
+            { id: 28, name: "Yâ Basîr", arabic: "البصير", count: "1448", desc: "Her şeyi en ince detayına kadar gören" },
+            { id: 29, name: "Yâ Hakem", arabic: "الحكم", count: "1448", desc: "Mutlak hüküm veren, adaletle hükmeden" },
+            { id: 30, name: "Yâ Adl", arabic: "العدل", count: "1448", desc: "Mutlak adil, hakkaniyet sahibi" },
+            { id: 31, name: "Yâ Lâtîf", arabic: "اللطيف", count: "1448", desc: "Kullarını en ince detayına kadar bilen, lütufkar" },
+            { id: 32, name: "Yâ Habîr", arabic: "الخبير", count: "1448", desc: "Her şeyin iç yüzünden ve haberinden haberdar olan" },
+            { id: 33, name: "Yâ Halîm", arabic: "الحليم", count: "1448", desc: "Cezada acele etmeyen, yumuşak davranan, hilaf sahibi" },
+            { id: 34, name: "Yâ Azîm", arabic: "العظيم", count: "1448", desc: "Büyüklükte benzeri olmayan, yüce" },
+            { id: 35, name: "Yâ Gafûr", arabic: "الغفور", count: "1448", desc: "Bağışlaması bol, affedici" },
+            { id: 36, name: "Yâ Şekûr", arabic: "الشكور", count: "1448", desc: "Az amele karşılık çok sevap veren, şükrün karşılığını veren" },
+            { id: 37, name: "Yâ Aliyy", arabic: "العلي", count: "1448", desc: "Yüceler yücesi, şanı ve makamı en yüksek olan" },
+            { id: 38, name: "Yâ Kebîr", arabic: "الكبير", count: "1448", desc: "Büyüklükte en büyük olan" },
+            { id: 39, name: "Yâ Hafîz", arabic: "الحفيظ", count: "1448", desc: "Her şeyi koruyup gözeten" },
+            { id: 40, name: "Yâ Mukît", arabic: "المقيت", count: "1448", desc: "Her yaratılmışın rızkını ve gıdasını veren" },
+            { id: 41, name: "Yâ Hasîb", arabic: "الحسيب", count: "1448", desc: "Kullarını en iyi gören, kafi gelen" },
+            { id: 42, name: "Yâ Celîl", arabic: "الجليل", count: "1448", desc: "Celal ve azamet sahibi, yüce" },
+            { id: 43, name: "Yâ Kerîm", arabic: "الكريم", count: "1448", desc: "İkramı bol, cömert, kerem sahibi" },
+            { id: 44, name: "Yâ Rakîb", arabic: "الرقيب", count: "1448", desc: "Her varlığı ve işi sürekli gözetim altında tutan" },
+            { id: 45, name: "Yâ Mücîب", arabic: "المجيب", count: "1448", desc: "Dualara ve isteklere karşılık veren, icabet eden" },
+            { id: 46, name: "Yâ Vâsi'", arabic: "الواسع", count: "1448", desc: "Rahmeti, ilmi ve kudretiyle her şeyi kuşatan" },
+            { id: 47, name: "Yâ Hakîm", arabic: "الحكيم", count: "1448", desc: "Her işinde hikmet ve denge olan" },
+            { id: 48, name: "Yâ Vedûd", arabic: "الودود", count: "1448", desc: "Kullarını en çok seven, sevilmeye en layık olan" },
+            { id: 49, name: "Yâ Mecîd", arabic: "المجيد", count: "1448", desc: "Şanı yüce, şeref ve ululuk sahibi" },
+            { id: 50, name: "Yâ Bâis", arabic: "الباعث", count: "1448", desc: "Ölüleri dirilten, kabirlerden çıkaran" },
+            { id: 51, name: "Yâ Şehîd", arabic: "الشهيد", count: "1448", desc: "Her zaman ve her yerde hazır ve şahit olan" },
+            { id: 52, name: "Yâ Hakk", arabic: "الحق", count: "1448", desc: "Varlığı hiç değişmeyen gerçek, hak olan" },
+            { id: 53, name: "Yâ Vekîl", arabic: "الوكيل", count: "1448", desc: "Kendisine güvenenlerin işlerini en iyi yoluna koyan" },
+            { id: 54, name: "Yâ Kaviyy", arabic: "القوي", count: "1448", desc: "Sonsuz ve sınırsız güç sahibi" },
+            { id: 55, name: "Yâ Metîn", arabic: "المتين", count: "1448", desc: "Çok sağlam, kudreti ve gücü asla sarsılmayan" },
+            { id: 56, name: "Yâ Veliyy", arabic: "الولي", count: "1448", desc: "İnananların dostu, yardımcısı ve koruyucusu" },
+            { id: 57, name: "Yâ Hamîd", arabic: "الحميد", count: "1448", desc: "Yalnız kendisi övgüye layık olan" },
+            { id: 58, name: "Yâ Muhsî", arabic: "المحصي", count: "1448", desc: "Her şeyin sayısını, miktarını en ince ayrıntısına kadar bilen" },
+            { id: 59, name: "Yâ Mübdi'", arabic: "المبدئ", count: "1448", desc: "Örneksiz, maddesiz ilk defa yaratan" },
+            { id: 60, name: "Yâ Muîd", arabic: "المعيد", count: "1448", desc: "Yarattıklarını yok edip ardından tekrar dirilten" },
+            { id: 61, name: "Yâ Muhyî", arabic: "المحيي", count: "1448", desc: "Hayat veren, canlandıran" },
+            { id: 62, name: "Yâ Mümît", arabic: "المميت", count: "1448", desc: "Canlıların ölümünü yaratan, öldüren" },
+            { id: 63, name: "Yâ Hayy", arabic: "الحي", count: "1448", desc: "Daima diri, ölümsüz ve hayat sahibi" },
+            { id: 64, name: "Yâ Kayyûm", arabic: "القيوم", count: "1448", desc: "Kendi kendine kaim olan, her şeyi ayakta tutan" },
+            { id: 65, name: "Yâ Vâcid", arabic: "الواجد", count: "1448", desc: "İstediğini her an bulan, hiçbir şeyi eksik olmayan" },
+            { id: 66, name: "Yâ Mâcid", arabic: "الماجد", count: "1448", desc: "Kadri ve şanı büyük, kerem ve şeref sahibi" },
+            { id: 67, name: "Yâ Vâhid", arabic: "الواحد", count: "1448", desc: "Tek olan, ortağı ve benzeri bulunmayan" },
+            { id: 68, name: "Yâ Samed", arabic: "الصمد", count: "1448", desc: "Her şeyin kendisine muhtaç olduğu, hiçbir şeye muhtaç olmayan" },
+            { id: 69, name: "Yâ Kâdir", arabic: "القادر", count: "1448", desc: "Dilediğini dilediği gibi yapmaya gücü yeten" },
+            { id: 70, name: "Yâ Muktedir", arabic: "المقتدر", count: "1448", desc: "Her şeye gücü yeten, kudret sahibi" },
+            { id: 71, name: "Yâ Mukaddim", arabic: "المقدم", count: "1448", desc: "Dilediğini öne geçiren, öne alan" },
+            { id: 72, name: "Yâ Muahhir", arabic: "المؤخر", count: "1448", desc: "Dilediğini arkaya bırakan, erteleyen" },
+            { id: 73, name: "Yâ Evvel", arabic: "الأول", count: "1448", desc: "Öncesi olmayan, ilk" },
+            { id: 74, name: "Yâ Âhir", arabic: "الأخر", count: "1448", desc: "Sonrası olmayan, son" },
+            { id: 75, name: "Yâ Zâhir", arabic: "الظاهر", count: "1448", desc: "Varlığı açık ve delillerle aşikar olan" },
+            { id: 76, name: "Yâ Bâtın", arabic: "الباطن", count: "1448", desc: "Mahiyeti gözlerden gizli olan, iç yüzünü bilen" },
+            { id: 77, name: "Yâ Vâlî", arabic: "الوالي", count: "1448", desc: "Bu kainatı ve her an olanları yöneten" },
+            { id: 78, name: "Yâ Müteâlî", arabic: "المتعالي", count: "1448", desc: "Aklın mümkün gördüğü her şeyin ötesinde yüce olan" },
+            { id: 79, name: "Yâ Berr", arabic: "البر", count: "1448", desc: "İyilik ve ihsanı bol olan" },
+            { id: 80, name: "Yâ Tevvâb", arabic: "التواب", count: "1448", desc: "Tövbeleri kabul eden, tevbeye imkan veren" },
+            { id: 81, name: "Yâ Müntakim", arabic: "المنتقم", count: "1448", desc: "Suçluları adaletiyle cezalandıran" },
+            { id: 82, name: "Yâ Afüvv", arabic: "العفو", count: "1448", desc: "Affetmeyi seven, günahları bağışlayan" },
+            { id: 83, name: "Yâ Raûf", arabic: "الرؤوف", count: "1448", desc: "Çok şefkatli, merhamet edici" },
+            { id: 84, name: "Yâ Mâlikü'l-Mülk", arabic: "مالك الملك", count: "1448", desc: "Mülkün gerçek sahibi" },
+            { id: 85, name: "Yâ Zü'l-Celâli ve'l-İkrâm", arabic: "ذو الجلال والإكرام", count: "1448", desc: "Hem ululuk hem de ikram sahibi" },
+            { id: 86, name: "Yâ Muksit", arabic: "المقسط", count: "1448", desc: "İşleri denk ve adaletli bir şekilde yerine getiren" },
+            { id: 87, name: "Yâ Câmi'", arabic: "الجامع", count: "1448", desc: "Dilediğini dilediği yerde toplayan" },
+            { id: 88, name: "Yâ Ganî", arabic: "الغني", count: "1448", desc: "Zengin, hiçbir şeye ihtiyacı olmayan" },
+            { id: 89, name: "Yâ Mugnî", arabic: "المغني", count: "1448", desc: "Dilediğini zengin eden, bolluk veren" },
+            { id: 90, name: "Yâ Mâni'", arabic: "المانع", count: "1448", desc: "Bazı şeylerin gerçekleşmesine engel olan" },
+            { id: 91, name: "Yâ Dârr", arabic: "الضار", count: "1448", desc: "Zararlı şeyleri yaratan (imtihan hikmetiyle)" },
+            { id: 92, name: "Yâ Nâfi'", arabic: "النافع", count: "1448", desc: "Faydalı şeyleri yaratan, hayır veren" },
+            { id: 93, name: "Yâ Nûr", arabic: "النور", count: "1448", desc: "Alemleri nurlandıran, aydınlatan" },
+            { id: 94, name: "Yâ Hâdî", arabic: "الهادي", count: "1448", desc: "Hidayete veren, doğru yolu gösteren" },
+            { id: 95, name: "Yâ Bedî'", arabic: "البديع", count: "1448", desc: "Örneksiz, benzersiz güzellikte yaratan" },
+            { id: 96, name: "Yâ Bâkî", arabic: "الباقي", count: "1448", desc: "Varlığının sonu olmayan, ebedi" },
+            { id: 97, name: "Yâ Vâris", arabic: "الوارث", count: "1448", desc: "Her şeyin gerçek varisi, sahibi" },
+            { id: 98, name: "Yâ Reşîd", arabic: "الرشيد", count: "1448", desc: "Doğru yolu gösteren, irşat eden" },
+            { id: 99, name: "Yâ Sabûr", arabic: "الصبور", count: "1448", desc: "Çok sabırlı, cezada acele etmeyen" }
+        ];
+
+        let completedData = JSON.parse(localStorage.getItem('esma_completed_v3') || '{}');
+
+        let oldFormat = JSON.parse(localStorage.getItem('esma_completed_v2') || '{}');
+        if (Object.keys(oldFormat).length > 0 && Object.keys(completedData).length === 0) {
+            for (let id in oldFormat) {
+                if (oldFormat[id]) {
+                    completedData[id] = { completed: true, date: new Date().toISOString() };
+                }
+            }
+            localStorage.setItem('esma_completed_v3', JSON.stringify(completedData));
+        }
+
+        function getInitialIndex() {
+            if (Object.keys(completedData).length === 0) return 0;
+            for (let i = 0; i < esmalar.length; i++) {
+                if (!completedData[esmalar[i].id]?.completed) {
+                    return i;
+                }
+            }
+            return 0; 
+        }
+
+        let currentIndex = getInitialIndex();
+
+        function formatDateText(isoString) {
+            if (!isoString) return "";
+            const date = new Date(isoString);
+            const now = new Date();
+
+            const timeStr = date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+            
+            const isToday = date.getDate() === now.getDate() &&
+                            date.getMonth() === now.getMonth() &&
+                            date.getFullYear() === now.getFullYear();
+
+            const yesterday = new Date();
+            yesterday.setDate(now.getDate() - 1);
+            const isYesterday = date.getDate() === yesterday.getDate() &&
+                                date.getMonth() === yesterday.getMonth() &&
+                                date.getFullYear() === yesterday.getFullYear();
+
+            if (isToday) {
+                return `Bugün, saat ${timeStr}`;
+            } else if (isYesterday) {
+                return `Dün, saat ${timeStr}`;
+            } else {
+                const dayStr = String(date.getDate()).padStart(2, '0');
+                const monthStr = String(date.getMonth() + 1).padStart(2, '0');
+                const yearStr = date.getFullYear();
+                return `${dayStr}/${monthStr}/${yearStr} saat ${timeStr}`;
+            }
+        }
+
+        function renderApp() {
+            const container = document.getElementById('cardContainer');
+            const item = esmalar[currentIndex];
+            const record = completedData[item.id] || { completed: false, date: null };
+            const isDone = record.completed;
+
+            let countDone = Object.values(completedData).filter(x => x.completed).length;
+            document.getElementById('completedCount').innerText = countDone;
+
+            let dateTextFormatted = formatDateText(record.date);
+
+            container.innerHTML = `
+                <div class="main-card ${isDone ? 'completed' : ''}">
+                    <div class="esma-badge">${item.id} / 99. Esma</div>
+                    <div class="esma-title">${item.name}</div>
+                    <div class="esma-arabic">${item.arabic}</div>
+                    <div class="esma-count-badge">Zikir Adedi: ${item.count}</div>
+                    <div class="esma-desc">${item.desc}</div>
+                    <div class="completion-date">Tamamlanma: ${dateTextFormatted}</div>
+                    <button class="btn-action" onclick="toggleCurrent()">
+                        ${isDone ? '✓ Tamamlandı (Geri Al)' : 'Okudum, İşaretle ve İlerle'}
+                    </button>
+                </div>
+            `;
+
+            let nextIndex = (currentIndex + 1) % esmalar.length;
+            document.getElementById('nextName').innerText = `${esmalar[nextIndex].id}. ${esmalar[nextIndex].name} - ${esmalar[nextIndex].arabic} (${esmalar[nextIndex].count} defa)`;
+        }
+
+        function toggleCurrent() {
+            const item = esmalar[currentIndex];
+            const currentStatus = completedData[item.id]?.completed || false;
+
+            if (!currentStatus) {
+                completedData[item.id] = {
+                    completed: true,
+                    date: new Date().toISOString()
+                };
+            } else {
+                completedData[item.id] = {
+                    completed: false,
+                    date: null
+                };
+            }
+
+            localStorage.setItem('esma_completed_v3', JSON.stringify(completedData));
+            
+            if (completedData[item.id].completed && currentIndex < esmalar.length - 1) {
+                currentIndex++;
+            }
+            renderApp();
+        }
+
+        function changeIndex(direction) {
+            currentIndex += direction;
+            if (currentIndex < 0) currentIndex = esmalar.length - 1;
+            if (currentIndex >= esmalar.length) currentIndex = 0;
+            renderApp();
+        }
+
+        function resetAll() {
+            if (confirm('Tüm ilerlemeniz ve tarih kayıtlarınız sıfırlansın mı?')) {
+                completedData = {};
+                localStorage.removeItem('esma_completed_v3');
+                localStorage.removeItem('esma_completed_v2');
+                currentIndex = 0;
+                renderApp();
+            }
+        }
+
+        renderApp();
+    </script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+{
+  "name": "Esma-ül Hüsna Zikir Takibi",
+  "short_name": "Esma Takip",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8faf8",
+  "theme_color": "#1b4332",
+  "icons": [
+    {
+      "src": "https://raw.githubusercontent.com/pwabuilder/assets/main/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
