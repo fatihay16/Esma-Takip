@@ -340,8 +340,8 @@
             { id: 41, name: "Yâ Hasîb", arabic: "الحسيب", count: "1448", desc: "Kullarını en iyi gören, kafi gelen" },
             { id: 42, name: "Yâ Celîl", arabic: "الجليل", count: "1448", desc: "Celal ve azamet sahibi, yüce" },
             { id: 43, name: "Yâ Kerîm", arabic: "الكريم", count: "1448", desc: "İkramı bol, cömert, kerem sahibi" },
-            { id: 44, name: "Yâ Rakîb", arabic: "الرقيب", count: "1448", desc: "Her varlığı ve işi sürekli gözetim altında tutan" },
-            { id: 45, name: "Yâ Mücîب", arabic: "المجيب", count: "1448", desc: "Dualara ve isteklere karşılık veren, icabet eden" },
+            { id: 44, name: "Yâ Rakîب", arabic: "الرقيب", count: "1448", desc: "Her varlığı ve işi sürekli gözetim altında tutan" },
+            { id: 45, name: "Yâ Mücîb", arabic: "المجيب", count: "1448", desc: "Dualara ve isteklere karşılık veren, icabet eden" },
             { id: 46, name: "Yâ Vâsi'", arabic: "الواسع", count: "1448", desc: "Rahmeti, ilmi ve kudretiyle her şeyi kuşatan" },
             { id: 47, name: "Yâ Hakîm", arabic: "الحكيم", count: "1448", desc: "Her işinde hikmet ve denge olan" },
             { id: 48, name: "Yâ Vedûd", arabic: "الودود", count: "1448", desc: "Kullarını en çok seven, sevilmeye en layık olan" },
@@ -384,7 +384,7 @@
             { id: 85, name: "Yâ Zü'l-Celâli ve'l-İkrâm", arabic: "ذو الجلال والإكرام", count: "1448", desc: "Hem ululuk hem de ikram sahibi" },
             { id: 86, name: "Yâ Muksit", arabic: "المقسط", count: "1448", desc: "İşleri denk ve adaletli bir şekilde yerine getiren" },
             { id: 87, name: "Yâ Câmi'", arabic: "الجامع", count: "1448", desc: "Dilediğini dilediği yerde toplayan" },
-            { id: 88, name: "Yâ Ganî", arabic: "الغني", count: "1448", desc: "Zengin, hiçbir şeye ihtiyacı olmayan" },
+            { id: 88, name: "Yâ Ganîyy", arabic: "الغني", count: "1448", desc: "Zengin, hiçbir şeye ihtiyacı olmayan" },
             { id: 89, name: "Yâ Mugnî", arabic: "المغني", count: "1448", desc: "Dilediğini zengin eden, bolluk veren" },
             { id: 90, name: "Yâ Mâni'", arabic: "المانع", count: "1448", desc: "Bazı şeylerin gerçekleşmesine engel olan" },
             { id: 91, name: "Yâ Dârr", arabic: "الضار", count: "1448", desc: "Zararlı şeyleri yaratan (imtihan hikmetiyle)" },
@@ -522,6 +522,34 @@
         }
 
         renderApp();
+
+        // --- SAĞA SOLA KAYDIRMA (SWIPE) ÖZELLİĞİ ---
+        let dokunmaBaslangicX = 0;
+        let dokunmaBitisX = 0;
+        const minimumKaydirmaMesafesi = 50;
+
+        document.addEventListener('touchstart', (e) => {
+            dokunmaBaslangicX = e.changedTouches[0].screenX;
+        });
+
+        document.addEventListener('touchend', (e) => {
+            dokunmaBitisX = e.changedTouches[0].screenX;
+            hareketiAlgila();
+        });
+
+        function hareketiAlgila() {
+            let fark = dokunmaBitisX - dokunmaBaslangicX;
+            
+            if (Math.abs(fark) > minimumKaydirmaMesafesi) {
+                if (fark > 0) {
+                    // Sağa kaydırma -> Önceki Sayfa
+                    changeIndex(-1);
+                } else {
+                    // Sola kaydırma -> Sonraki Sayfa
+                    changeIndex(1);
+                }
+            }
+        }
     </script>
 </body>
 </html>
