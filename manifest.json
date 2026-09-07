@@ -1,21 +1,16 @@
 {
   "name": "Esma-ül Hüsna Zikir Takibi",
   "short_name": "Esma Takip",
-  "start_url": "/",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#f8faf8",
   "theme_color": "#1b4332",
   "icons": [
     {
-      "src": "https://raw.githubusercontent.com/pwabuilder/assets/main/icon-512x512.png",
+      "src": "icon.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
-    },
-    {
-      "src": "https://raw.githubusercontent.com/pwabuilder/assets/main/icon-192x192.png",
-      "sizes": "192x192",
-      "type": "image/png"
     }
   ]
 }
