@@ -108,13 +108,13 @@
             background: #e2e8f0;
         }
 
-        /* 3D Kart Alanı */
+        /* Sayfa Çevirme (Page Flip) 3D Efekt Alanı */
         .card-viewport {
             position: relative;
             width: 100%;
-            overflow: hidden;
+            overflow: visible;
             margin-bottom: 16px;
-            perspective: 1000px;
+            perspective: 1200px;
             touch-action: pan-y;
         }
 
@@ -126,25 +126,24 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.06);
             border: 2px solid #e2e8f0;
             position: relative;
-            /* Derinlik ve akıcı geçiş animasyonu */
-            transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            transform-origin: center;
+            transform-origin: left center;
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;
             will-change: transform, opacity;
         }
 
-        /* Farklı Efekt Durumları */
-        .main-card.slide-out-left {
-            transform: translateX(-100px) rotate(-8deg) scale(0.9);
+        /* Sayfa Çevirme Durumları */
+        .main-card.flip-out-left {
+            transform: rotateY(-90deg) scale(0.9);
             opacity: 0;
         }
 
-        .main-card.slide-out-right {
-            transform: translateX(100px) rotate(8deg) scale(0.9);
+        .main-card.flip-out-right {
+            transform: rotateY(90deg) scale(0.9);
             opacity: 0;
         }
 
-        .main-card.slide-in {
-            transform: scale(0.95);
+        .main-card.flip-in {
+            transform: rotateY(90deg) scale(0.9);
             opacity: 0;
         }
 
@@ -494,7 +493,7 @@
             let dateTextFormatted = formatDateText(record.date);
 
             container.innerHTML = `
-                <div class="main-card slide-in ${isDone ? 'completed' : ''}" id="activeCard">
+                <div class="main-card flip-in ${isDone ? 'completed' : ''}" id="activeCard">
                     <div class="esma-badge">${item.id} / 99. Esma</div>
                     <div class="esma-title">${item.name}</div>
                     <div class="esma-arabic">${item.arabic}</div>
@@ -507,11 +506,11 @@
                 </div>
             `;
 
-            // Yeni kart ekrana girerken animasyonu tetikle
+            // Sayfa açılış animasyonu
             requestAnimationFrame(() => {
                 const card = document.getElementById('activeCard');
                 if (card) {
-                    card.classList.remove('slide-in');
+                    card.classList.remove('flip-in');
                 }
             });
 
@@ -548,11 +547,10 @@
             const card = document.getElementById('activeCard');
             if (!card) return;
 
-            // Çıkış efekti sınıfını ekle
             if (animationDir === 'left') {
-                card.classList.add('slide-out-left');
+                card.classList.add('flip-out-left');
             } else {
-                card.classList.add('slide-out-right');
+                card.classList.add('flip-out-right');
             }
 
             setTimeout(() => {
@@ -560,7 +558,7 @@
                 if (currentIndex < 0) currentIndex = esmalar.length - 1;
                 if (currentIndex >= esmalar.length) currentIndex = 0;
                 renderApp();
-            }, 300); // CSS transition süresiyle uyumlu
+            }, 400); 
         }
 
         function resetAll() {
@@ -575,7 +573,7 @@
 
         renderApp();
 
-        // --- 3D / KART DESTE EFEKTİ İÇİN DOKUNMA YÖNETİMİ ---
+        // --- SAYFA ÇEVİRME DOKUNMA YÖNETİMİ ---
         let touchStartX = 0;
         let touchEndX = 0;
         const minSwipeDistance = 50;
@@ -592,10 +590,8 @@
 
             if (Math.abs(diff) > minSwipeDistance) {
                 if (diff > 0) {
-                    // Sağa kaydırma -> Önceki Sayfa
                     changeIndex(-1, 'right');
                 } else {
-                    // Sola kaydırma -> Sonraki Sayfa
                     changeIndex(1, 'left');
                 }
             }
