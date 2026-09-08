@@ -108,12 +108,13 @@
             background: #e2e8f0;
         }
 
-        /* Kart Konteyneri ve Geçiş Efektleri */
+        /* 3D Kart Alanı */
         .card-viewport {
             position: relative;
             width: 100%;
             overflow: hidden;
             margin-bottom: 16px;
+            perspective: 1000px;
             touch-action: pan-y;
         }
 
@@ -125,8 +126,26 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.06);
             border: 2px solid #e2e8f0;
             position: relative;
-            transition: transform 0.25s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.25s ease;
+            /* Derinlik ve akıcı geçiş animasyonu */
+            transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-origin: center;
             will-change: transform, opacity;
+        }
+
+        /* Farklı Efekt Durumları */
+        .main-card.slide-out-left {
+            transform: translateX(-100px) rotate(-8deg) scale(0.9);
+            opacity: 0;
+        }
+
+        .main-card.slide-out-right {
+            transform: translateX(100px) rotate(8deg) scale(0.9);
+            opacity: 0;
+        }
+
+        .main-card.slide-in {
+            transform: scale(0.95);
+            opacity: 0;
         }
 
         .main-card.completed {
@@ -291,7 +310,6 @@
         <button class="btn-reset" onclick="resetAll()">Sıfırla</button>
     </div>
 
-    <!-- Kartın kaydırılabilmesi için viewport kapsayıcısı -->
     <div class="card-viewport" id="cardViewport">
         <div id="cardContainer"></div>
     </div>
@@ -476,7 +494,7 @@
             let dateTextFormatted = formatDateText(record.date);
 
             container.innerHTML = `
-                <div class="main-card ${isDone ? 'completed' : ''}" id="activeCard">
+                <div class="main-card slide-in ${isDone ? 'completed' : ''}" id="activeCard">
                     <div class="esma-badge">${item.id} / 99. Esma</div>
                     <div class="esma-title">${item.name}</div>
                     <div class="esma-arabic">${item.arabic}</div>
@@ -488,6 +506,14 @@
                     </button>
                 </div>
             `;
+
+            // Yeni kart ekrana girerken animasyonu tetikle
+            requestAnimationFrame(() => {
+                const card = document.getElementById('activeCard');
+                if (card) {
+                    card.classList.remove('slide-in');
+                }
+            });
 
             let nextIndex = (currentIndex + 1) % esmalar.length;
             document.getElementById('nextName').innerText = `${esmalar[nextIndex].id}. ${esmalar[nextIndex].name} - ${esmalar[nextIndex].arabic} (${esmalar[nextIndex].count} defa)`;
@@ -520,10 +546,13 @@
 
         function changeIndex(direction, animationDir = 'left') {
             const card = document.getElementById('activeCard');
-            if (card) {
-                const moveX = animationDir === 'left' ? -60 : 60;
-                card.style.transform = `translateX(${moveX}px)`;
-                card.style.opacity = '0';
+            if (!card) return;
+
+            // Çıkış efekti sınıfını ekle
+            if (animationDir === 'left') {
+                card.classList.add('slide-out-left');
+            } else {
+                card.classList.add('slide-out-right');
             }
 
             setTimeout(() => {
@@ -531,20 +560,7 @@
                 if (currentIndex < 0) currentIndex = esmalar.length - 1;
                 if (currentIndex >= esmalar.length) currentIndex = 0;
                 renderApp();
-                
-                const newCard = document.getElementById('activeCard');
-                if (newCard) {
-                    const startX = animationDir === 'left' ? 60 : -60;
-                    newCard.style.transform = `translateX(${startX}px)`;
-                    newCard.style.opacity = '0';
-                    
-                    requestAnimationFrame(() => {
-                        newCard.style.transition = 'transform 0.25s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.25s ease';
-                        newCard.style.transform = 'translateX(0)';
-                        newCard.style.opacity = '1';
-                    });
-                }
-            }, 200);
+            }, 300); // CSS transition süresiyle uyumlu
         }
 
         function resetAll() {
@@ -559,34 +575,20 @@
 
         renderApp();
 
-        // --- GELİŞTİRİLMİŞ PARMAKLA KAYDIRMA (SWIPE) EFEKTİ ---
+        // --- 3D / KART DESTE EFEKTİ İÇİN DOKUNMA YÖNETİMİ ---
         let touchStartX = 0;
         let touchEndX = 0;
-        let currentX = 0;
-        const minSwipeDistance = 60;
+        const minSwipeDistance = 50;
 
         const viewport = document.getElementById('cardViewport');
 
         viewport.addEventListener('touchstart', (e) => {
             touchStartX = e.changedTouches[0].screenX;
-            currentX = touchStartX;
-        }, {passive: true});
-
-        viewport.addEventListener('touchmove', (e) => {
-            currentX = e.changedTouches[0].screenX;
-            let diff = currentX - touchStartX;
-            const card = document.getElementById('activeCard');
-            if (card) {
-                // Parmak hareket ederken kartın da anlık olarak parmağı takip etmesi
-                card.style.transition = 'none';
-                card.style.transform = `translateX(${diff * 0.4}px)`; // Yumuşak bir direnç hissi için çarpan
-            }
         }, {passive: true});
 
         viewport.addEventListener('touchend', (e) => {
             touchEndX = e.changedTouches[0].screenX;
             let diff = touchEndX - touchStartX;
-            const card = document.getElementById('activeCard');
 
             if (Math.abs(diff) > minSwipeDistance) {
                 if (diff > 0) {
@@ -595,12 +597,6 @@
                 } else {
                     // Sola kaydırma -> Sonraki Sayfa
                     changeIndex(1, 'left');
-                }
-            } else {
-                // Yeterince kaydırılmadıysa kart yerine geri gelsin
-                if (card) {
-                    card.style.transition = 'transform 0.2s ease';
-                    card.style.transform = 'translateX(0)';
                 }
             }
         });
