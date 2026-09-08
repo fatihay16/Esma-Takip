@@ -126,12 +126,19 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.06);
             border: 2px solid #e2e8f0;
             position: relative;
-            transform-origin: left center;
             transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;
             will-change: transform, opacity;
         }
 
-        /* Sayfa Çevirme Durumları */
+        /* Yönlü Pivot Noktaları ve Çevirme Durumları */
+        .main-card.origin-left {
+            transform-origin: left center;
+        }
+
+        .main-card.origin-right {
+            transform-origin: right center;
+        }
+
         .main-card.flip-out-left {
             transform: rotateY(-90deg) scale(0.9);
             opacity: 0;
@@ -142,8 +149,13 @@
             opacity: 0;
         }
 
-        .main-card.flip-in {
+        .main-card.flip-in-left {
             transform: rotateY(90deg) scale(0.9);
+            opacity: 0;
+        }
+
+        .main-card.flip-in-right {
+            transform: rotateY(-90deg) scale(0.9);
             opacity: 0;
         }
 
@@ -430,16 +442,6 @@
 
         let completedData = JSON.parse(localStorage.getItem('esma_completed_v3') || '{}');
 
-        let oldFormat = JSON.parse(localStorage.getItem('esma_completed_v2') || '{}');
-        if (Object.keys(oldFormat).length > 0 && Object.keys(completedData).length === 0) {
-            for (let id in oldFormat) {
-                if (oldFormat[id]) {
-                    completedData[id] = { completed: true, date: new Date().toISOString() };
-                }
-            }
-            localStorage.setItem('esma_completed_v3', JSON.stringify(completedData));
-        }
-
         function getInitialIndex() {
             if (Object.keys(completedData).length === 0) return 0;
             for (let i = 0; i < esmalar.length; i++) {
@@ -456,7 +458,6 @@
             if (!isoString) return "";
             const date = new Date(isoString);
             const now = new Date();
-
             const timeStr = date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
             
             const isToday = date.getDate() === now.getDate() &&
@@ -481,7 +482,7 @@
             }
         }
 
-        function renderApp() {
+        function renderApp(direction = 'left') {
             const container = document.getElementById('cardContainer');
             const item = esmalar[currentIndex];
             const record = completedData[item.id] || { completed: false, date: null };
@@ -492,8 +493,12 @@
 
             let dateTextFormatted = formatDateText(record.date);
 
+            // Geliş yönüne göre içeri giriş animasyon sınıfını ve pivot noktasını belirle
+            let originClass = direction === 'left' ? 'origin-left' : 'origin-right';
+            let inClass = direction === 'left' ? 'flip-in-left' : 'flip-in-right';
+
             container.innerHTML = `
-                <div class="main-card flip-in ${isDone ? 'completed' : ''}" id="activeCard">
+                <div class="main-card ${originClass} ${inClass} ${isDone ? 'completed' : ''}" id="activeCard">
                     <div class="esma-badge">${item.id} / 99. Esma</div>
                     <div class="esma-title">${item.name}</div>
                     <div class="esma-arabic">${item.arabic}</div>
@@ -506,11 +511,11 @@
                 </div>
             `;
 
-            // Sayfa açılış animasyonu
+            // Animasyon tetikleme
             requestAnimationFrame(() => {
                 const card = document.getElementById('activeCard');
                 if (card) {
-                    card.classList.remove('flip-in');
+                    card.classList.remove('flip-in-left', 'flip-in-right');
                 }
             });
 
@@ -540,24 +545,25 @@
                 changeIndex(1, 'left');
                 return;
             }
-            renderApp();
+            renderApp('left');
         }
 
-        function changeIndex(direction, animationDir = 'left') {
+        function changeIndex(directionValue, directionName) {
             const card = document.getElementById('activeCard');
             if (!card) return;
 
-            if (animationDir === 'left') {
-                card.classList.add('flip-out-left');
+            // Gidiş yönüne göre çıkış efektini ve pivot noktasını ayarla
+            if (directionName === 'left') {
+                card.classList.add('origin-left', 'flip-out-left');
             } else {
-                card.classList.add('flip-out-right');
+                card.classList.add('origin-right', 'flip-out-right');
             }
 
             setTimeout(() => {
-                currentIndex += direction;
+                currentIndex += directionValue;
                 if (currentIndex < 0) currentIndex = esmalar.length - 1;
                 if (currentIndex >= esmalar.length) currentIndex = 0;
-                renderApp();
+                renderApp(directionName);
             }, 400); 
         }
 
@@ -565,15 +571,14 @@
             if (confirm('Tüm ilerlemeniz ve tarih kayıtlarınız sıfırlansın mı?')) {
                 completedData = {};
                 localStorage.removeItem('esma_completed_v3');
-                localStorage.removeItem('esma_completed_v2');
                 currentIndex = 0;
-                renderApp();
+                renderApp('left');
             }
         }
 
-        renderApp();
+        renderApp('left');
 
-        // --- SAYFA ÇEVİRME DOKUNMA YÖNETİMİ ---
+        // --- DOKUNMA VE KAYDIRMA (SWIPE) YÖNETİMİ ---
         let touchStartX = 0;
         let touchEndX = 0;
         const minSwipeDistance = 50;
@@ -590,8 +595,10 @@
 
             if (Math.abs(diff) > minSwipeDistance) {
                 if (diff > 0) {
+                    // Sağa kaydırma (Önceki kart)
                     changeIndex(-1, 'right');
                 } else {
+                    // Sola kaydırma (Sonraki kart)
                     changeIndex(1, 'left');
                 }
             }
