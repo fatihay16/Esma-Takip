@@ -44,6 +44,7 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            overflow-x: hidden;
         }
 
         header {
@@ -107,16 +108,25 @@
             background: #e2e8f0;
         }
 
+        /* Kart Konteyneri ve Geçiş Efektleri */
+        .card-viewport {
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+            margin-bottom: 16px;
+            touch-action: pan-y;
+        }
+
         .main-card {
             background: var(--card-bg);
             border-radius: 24px;
             padding: 28px 20px;
             text-align: center;
             box-shadow: 0 10px 30px rgba(0,0,0,0.06);
-            margin-bottom: 16px;
             border: 2px solid #e2e8f0;
             position: relative;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: transform 0.25s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.25s ease;
+            will-change: transform, opacity;
         }
 
         .main-card.completed {
@@ -281,7 +291,10 @@
         <button class="btn-reset" onclick="resetAll()">Sıfırla</button>
     </div>
 
-    <div id="cardContainer"></div>
+    <!-- Kartın kaydırılabilmesi için viewport kapsayıcısı -->
+    <div class="card-viewport" id="cardViewport">
+        <div id="cardContainer"></div>
+    </div>
 
     <div class="next-preview" id="nextPreviewBox">
         <div class="next-info">
@@ -291,8 +304,8 @@
     </div>
 
     <div class="nav-buttons">
-        <button class="btn-nav" onclick="changeIndex(-1)">Önceki</button>
-        <button class="btn-nav" onclick="changeIndex(1)">Sonraki</button>
+        <button class="btn-nav" onclick="changeIndex(-1, 'right')">Önceki</button>
+        <button class="btn-nav" onclick="changeIndex(1, 'left')">Sonraki</button>
     </div>
 
     <script>
@@ -341,7 +354,7 @@
             { id: 42, name: "Yâ Celîl", arabic: "الجليل", count: "1448", desc: "Celal ve azamet sahibi, yüce" },
             { id: 43, name: "Yâ Kerîm", arabic: "الكريم", count: "1448", desc: "İkramı bol, cömert, kerem sahibi" },
             { id: 44, name: "Yâ Rakîب", arabic: "الرقيب", count: "1448", desc: "Her varlığı ve işi sürekli gözetim altında tutan" },
-            { id: 45, name: "Yâ Mücîb", arabic: "المجيب", count: "1448", desc: "Dualara ve isteklere karşılık veren, icabet eden" },
+            { id: 45, name: "Yâ Mücîب", arabic: "المجيب", count: "1448", desc: "Dualara ve isteklere karşılık veren, icabet eden" },
             { id: 46, name: "Yâ Vâsi'", arabic: "الواسع", count: "1448", desc: "Rahmeti, ilmi ve kudretiyle her şeyi kuşatan" },
             { id: 47, name: "Yâ Hakîm", arabic: "الحكيم", count: "1448", desc: "Her işinde hikmet ve denge olan" },
             { id: 48, name: "Yâ Vedûd", arabic: "الودود", count: "1448", desc: "Kullarını en çok seven, sevilmeye en layık olan" },
@@ -463,7 +476,7 @@
             let dateTextFormatted = formatDateText(record.date);
 
             container.innerHTML = `
-                <div class="main-card ${isDone ? 'completed' : ''}">
+                <div class="main-card ${isDone ? 'completed' : ''}" id="activeCard">
                     <div class="esma-badge">${item.id} / 99. Esma</div>
                     <div class="esma-title">${item.name}</div>
                     <div class="esma-arabic">${item.arabic}</div>
@@ -499,16 +512,39 @@
             localStorage.setItem('esma_completed_v3', JSON.stringify(completedData));
             
             if (completedData[item.id].completed && currentIndex < esmalar.length - 1) {
-                currentIndex++;
+                changeIndex(1, 'left');
+                return;
             }
             renderApp();
         }
 
-        function changeIndex(direction) {
-            currentIndex += direction;
-            if (currentIndex < 0) currentIndex = esmalar.length - 1;
-            if (currentIndex >= esmalar.length) currentIndex = 0;
-            renderApp();
+        function changeIndex(direction, animationDir = 'left') {
+            const card = document.getElementById('activeCard');
+            if (card) {
+                const moveX = animationDir === 'left' ? -60 : 60;
+                card.style.transform = `translateX(${moveX}px)`;
+                card.style.opacity = '0';
+            }
+
+            setTimeout(() => {
+                currentIndex += direction;
+                if (currentIndex < 0) currentIndex = esmalar.length - 1;
+                if (currentIndex >= esmalar.length) currentIndex = 0;
+                renderApp();
+                
+                const newCard = document.getElementById('activeCard');
+                if (newCard) {
+                    const startX = animationDir === 'left' ? 60 : -60;
+                    newCard.style.transform = `translateX(${startX}px)`;
+                    newCard.style.opacity = '0';
+                    
+                    requestAnimationFrame(() => {
+                        newCard.style.transition = 'transform 0.25s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.25s ease';
+                        newCard.style.transform = 'translateX(0)';
+                        newCard.style.opacity = '1';
+                    });
+                }
+            }, 200);
         }
 
         function resetAll() {
@@ -523,33 +559,51 @@
 
         renderApp();
 
-        // --- SAĞA SOLA KAYDIRMA (SWIPE) ÖZELLİĞİ ---
-        let dokunmaBaslangicX = 0;
-        let dokunmaBitisX = 0;
-        const minimumKaydirmaMesafesi = 50;
+        // --- GELİŞTİRİLMİŞ PARMAKLA KAYDIRMA (SWIPE) EFEKTİ ---
+        let touchStartX = 0;
+        let touchEndX = 0;
+        let currentX = 0;
+        const minSwipeDistance = 60;
 
-        document.addEventListener('touchstart', (e) => {
-            dokunmaBaslangicX = e.changedTouches[0].screenX;
-        });
+        const viewport = document.getElementById('cardViewport');
 
-        document.addEventListener('touchend', (e) => {
-            dokunmaBitisX = e.changedTouches[0].screenX;
-            hareketiAlgila();
-        });
+        viewport.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+            currentX = touchStartX;
+        }, {passive: true});
 
-        function hareketiAlgila() {
-            let fark = dokunmaBitisX - dokunmaBaslangicX;
-            
-            if (Math.abs(fark) > minimumKaydirmaMesafesi) {
-                if (fark > 0) {
+        viewport.addEventListener('touchmove', (e) => {
+            currentX = e.changedTouches[0].screenX;
+            let diff = currentX - touchStartX;
+            const card = document.getElementById('activeCard');
+            if (card) {
+                // Parmak hareket ederken kartın da anlık olarak parmağı takip etmesi
+                card.style.transition = 'none';
+                card.style.transform = `translateX(${diff * 0.4}px)`; // Yumuşak bir direnç hissi için çarpan
+            }
+        }, {passive: true});
+
+        viewport.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            let diff = touchEndX - touchStartX;
+            const card = document.getElementById('activeCard');
+
+            if (Math.abs(diff) > minSwipeDistance) {
+                if (diff > 0) {
                     // Sağa kaydırma -> Önceki Sayfa
-                    changeIndex(-1);
+                    changeIndex(-1, 'right');
                 } else {
                     // Sola kaydırma -> Sonraki Sayfa
-                    changeIndex(1);
+                    changeIndex(1, 'left');
+                }
+            } else {
+                // Yeterince kaydırılmadıysa kart yerine geri gelsin
+                if (card) {
+                    card.style.transition = 'transform 0.2s ease';
+                    card.style.transform = 'translateX(0)';
                 }
             }
-        }
+        });
     </script>
 </body>
 </html>
