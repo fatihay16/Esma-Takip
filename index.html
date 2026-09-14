@@ -108,7 +108,6 @@
             background: #e2e8f0;
         }
 
-        /* Sayfa Çevirme (Page Flip) 3D Efekt Alanı */
         .card-viewport {
             position: relative;
             width: 100%;
@@ -130,7 +129,6 @@
             will-change: transform, opacity;
         }
 
-        /* Yönlü Pivot Noktaları ve Çevirme Durumları */
         .main-card.origin-left {
             transform-origin: left center;
         }
@@ -382,8 +380,8 @@
             { id: 41, name: "Yâ Hasîb", arabic: "الحسيب", count: "1448", desc: "Kullarını en iyi gören, kafi gelen" },
             { id: 42, name: "Yâ Celîl", arabic: "الجليل", count: "1448", desc: "Celal ve azamet sahibi, yüce" },
             { id: 43, name: "Yâ Kerîm", arabic: "الكريم", count: "1448", desc: "İkramı bol, cömert, kerem sahibi" },
-            { id: 44, name: "Yâ Rakîب", arabic: "الرقيب", count: "1448", desc: "Her varlığı ve işi sürekli gözetim altında tutan" },
-            { id: 45, name: "Yâ Mücîب", arabic: "المجيب", count: "1448", desc: "Dualara ve isteklere karşılık veren, icabet eden" },
+            { id: 44, name: "Yâ Rakîp", arabic: "الرقيب", count: "1448", desc: "Her varlığı ve işi sürekli gözetim altında tutan" },
+            { id: 45, name: "Yâ Mücîp", arabic: "المجيب", count: "1448", desc: "Dualara ve isteklere karşılık veren, icabet eden" },
             { id: 46, name: "Yâ Vâsi'", arabic: "الواسع", count: "1448", desc: "Rahmeti, ilmi ve kudretiyle her şeyi kuşatan" },
             { id: 47, name: "Yâ Hakîm", arabic: "الحكيم", count: "1448", desc: "Her işinde hikmet ve denge olan" },
             { id: 48, name: "Yâ Vedûd", arabic: "الودود", count: "1448", desc: "Kullarını en çok seven, sevilmeye en layık olan" },
@@ -493,7 +491,6 @@
 
             let dateTextFormatted = formatDateText(record.date);
 
-            // Geliş yönüne göre içeri giriş animasyon sınıfını ve pivot noktasını belirle
             let originClass = direction === 'left' ? 'origin-left' : 'origin-right';
             let inClass = direction === 'left' ? 'flip-in-left' : 'flip-in-right';
 
@@ -511,7 +508,6 @@
                 </div>
             `;
 
-            // Animasyon tetikleme
             requestAnimationFrame(() => {
                 const card = document.getElementById('activeCard');
                 if (card) {
@@ -552,7 +548,6 @@
             const card = document.getElementById('activeCard');
             if (!card) return;
 
-            // Gidiş yönüne göre çıkış efektini ve pivot noktasını ayarla
             if (directionName === 'left') {
                 card.classList.add('origin-left', 'flip-out-left');
             } else {
@@ -578,7 +573,6 @@
 
         renderApp('left');
 
-        // --- DOKUNMA VE KAYDIRMA (SWIPE) YÖNETİMİ ---
         let touchStartX = 0;
         let touchEndX = 0;
         const minSwipeDistance = 50;
@@ -595,14 +589,27 @@
 
             if (Math.abs(diff) > minSwipeDistance) {
                 if (diff > 0) {
-                    // Sağa kaydırma (Önceki kart)
                     changeIndex(-1, 'right');
                 } else {
-                    // Sola kaydırma (Sonraki kart)
                     changeIndex(1, 'left');
                 }
             }
         });
+    </script>
+
+    <!-- Service Worker Kayıt Kodu -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js')
+            .then((reg) => {
+              console.log('Service Worker başarıyla kaydedildi:', reg.scope);
+            })
+            .catch((err) => {
+              console.log('Service Worker kayıt hatası:', err);
+            });
+        });
+      }
     </script>
 </body>
 </html>
