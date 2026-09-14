@@ -7,7 +7,7 @@
   "theme_color": "#1b4332",
   "icons": [
     {
-      "src": "icon.png",
+      "src": "https://raw.githubusercontent.com/pwabuilder/assets/main/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
