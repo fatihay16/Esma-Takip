@@ -1,10 +1,14 @@
 {
   "name": "Esma-ül Hüsna Zikir Takibi",
   "short_name": "Esma Takip",
-  "start_url": "./index.html",
+  "lang": "tr-TR",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#f8faf8",
   "theme_color": "#1b4332",
+  "description": "Esma-ül Hüsna zikirlerini takip etmek için kullanılan uygulama.",
   "icons": [
     {
       "src": "https://raw.githubusercontent.com/pwabuilder/assets/main/icon-512x512.png",
