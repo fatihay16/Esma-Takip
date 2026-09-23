@@ -443,83 +443,141 @@
 
 
 
+    const STORAGE_KEY = 'esma_takip_v1';
+    const DB_NAME = 'EsmaTakipDB';
+    const DB_VERSION = 1;
+    const DB_STORE = 'app';
+
     /* ============================================================
-       GÜVENLİ LOCAL STORAGE OKUMA
+       GÜVENLİ KALICI KAYIT SİSTEMİ
+       IndexedDB ana sistem + localStorage yedek
        ============================================================ */
 
-    function loadCompletedData() {
+    function readLocalStorage() {
         try {
             const saved = localStorage.getItem(STORAGE_KEY);
-
-            if (!saved) {
-                return {};
-            }
-
+            if (!saved) return {};
             const parsed = JSON.parse(saved);
-
-            if (parsed && typeof parsed === 'object') {
-                return parsed;
-            }
-
-            return {};
-
+            return parsed && typeof parsed === 'object' ? parsed : {};
         } catch (error) {
-            console.error('Kayıt okunamadı:', error);
-
-            /*
-             * Safari'de localStorage erişimi problemliyse
-             * uygulamanın tamamen çökmesini engeller.
-             */
+            console.warn('localStorage okunamadı:', error);
             return {};
         }
     }
 
-
-    /* ============================================================
-       GÜVENLİ LOCAL STORAGE KAYDETME
-       ============================================================ */
-
-    function saveCompletedData() {
+    function writeLocalStorage(data) {
         try {
-            localStorage.setItem(
-                STORAGE_KEY,
-                JSON.stringify(completedData)
-            );
-
-            /*
-             * Safari'de gerçekten kaydedilmiş mi kontrol et.
-             */
-            const check = localStorage.getItem(STORAGE_KEY);
-
-            if (check === null) {
-                console.error('Kayıt doğrulanamadı.');
-                return false;
-            }
-
-            return true;
-
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            return localStorage.getItem(STORAGE_KEY) !== null;
         } catch (error) {
-            console.error('Kayıt yapılamadı:', error);
-
-            /*
-             * Kullanıcıya bilgi ver.
-             */
-            alert(
-                'İlerleme kaydedilemedi. ' +
-                'Safari ayarlarında site verilerinin engellenmediğinden emin olun.'
-            );
-
+            console.warn('localStorage kullanılamadı:', error);
             return false;
         }
     }
 
+    function openDatabase() {
+        return new Promise((resolve, reject) => {
+            if (!('indexedDB' in window)) {
+                reject(new Error('IndexedDB desteklenmiyor.'));
+                return;
+            }
 
-    /* ============================================================
-       KAYITLI VERİLERİ YÜKLE
-       ============================================================ */
+            const request = indexedDB.open(DB_NAME, DB_VERSION);
 
-    let completedData = loadCompletedData();
+            request.onupgradeneeded = function () {
+                const db = request.result;
+                if (!db.objectStoreNames.contains(DB_STORE)) {
+                    db.createObjectStore(DB_STORE);
+                }
+            };
 
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error || new Error('IndexedDB açılamadı.'));
+        });
+    }
+
+    async function readIndexedDB() {
+        const db = await openDatabase();
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction(DB_STORE, 'readonly');
+            const request = tx.objectStore(DB_STORE).get('completedData');
+            request.onsuccess = () => {
+                db.close();
+                const value = request.result;
+                resolve(value && typeof value === 'object' ? value : null);
+            };
+            request.onerror = () => {
+                db.close();
+                reject(request.error || new Error('IndexedDB okunamadı.'));
+            };
+        });
+    }
+
+    async function writeIndexedDB(data) {
+        const db = await openDatabase();
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction(DB_STORE, 'readwrite');
+            tx.objectStore(DB_STORE).put(data, 'completedData');
+            tx.oncomplete = () => {
+                db.close();
+                resolve(true);
+            };
+            tx.onerror = () => {
+                db.close();
+                reject(tx.error || new Error('IndexedDB yazılamadı.'));
+            };
+            tx.onabort = () => {
+                db.close();
+                reject(tx.error || new Error('IndexedDB işlemi iptal edildi.'));
+            };
+        });
+    }
+
+    async function loadCompletedData() {
+        try {
+            const indexedData = await readIndexedDB();
+            if (indexedData && typeof indexedData === 'object') {
+                return indexedData;
+            }
+        } catch (error) {
+            console.warn('IndexedDB okunamadı, yedek sisteme geçiliyor:', error);
+        }
+
+        const localData = readLocalStorage();
+
+        // Eski localStorage kayıtını IndexedDB'ye taşı.
+        if (Object.keys(localData).length > 0) {
+            try {
+                await writeIndexedDB(localData);
+            } catch (error) {
+                console.warn('Eski kayıt IndexedDB\'ye taşınamadı:', error);
+            }
+        }
+
+        return localData;
+    }
+
+    async function saveCompletedData(data) {
+        // Ana kayıt: IndexedDB
+        try {
+            await writeIndexedDB(data);
+            // Yedek: localStorage (mümkünse)
+            writeLocalStorage(data);
+            return true;
+        } catch (error) {
+            console.warn('IndexedDB kaydı başarısız:', error);
+
+            // IndexedDB kullanılamazsa localStorage'ı dene.
+            if (writeLocalStorage(data)) {
+                return true;
+            }
+
+            alert(
+                'İlerleme kaydedilemedi. Tarayıcının site verilerini engellemediğinden emin olun.'
+            );
+            return false;
+        }
+    }
 
     /* ============================================================
        İLK TAMAMLANMAMIŞ ESMAYI BUL
@@ -753,7 +811,7 @@
        MEVCUT ESMAYI TAMAMLA / GERİ AL
        ============================================================ */
 
-    function toggleCurrent() {
+    async function toggleCurrent() {
 
         const item = esmalar[currentIndex];
 
@@ -782,7 +840,7 @@
              * Kaydetme başarısız olursa ilerleme yapma.
              */
 
-            const saved = saveCompletedData();
+            const saved = await saveCompletedData(completedData);
 
             if (!saved) {
 
@@ -900,7 +958,7 @@
        TÜMÜNÜ SIFIRLA
        ============================================================ */
 
-    function resetAll() {
+    async function resetAll() {
 
         const confirmed = confirm(
             'Tüm ilerlemeniz ve tarih kayıtlarınız sıfırlansın mı?'
@@ -912,17 +970,24 @@
 
 
         try {
-
             localStorage.removeItem(STORAGE_KEY);
-
         } catch (error) {
-
-            console.error(
-                'LocalStorage temizlenemedi:',
-                error
-            );
+            console.warn('LocalStorage temizlenemedi:', error);
         }
 
+        try {
+            const db = await openDatabase();
+            await new Promise((resolve) => {
+                const tx = db.transaction(DB_STORE, 'readwrite');
+                tx.objectStore(DB_STORE).delete('completedData');
+                tx.oncomplete = resolve;
+                tx.onerror = resolve;
+                tx.onabort = resolve;
+            });
+            db.close();
+        } catch (error) {
+            console.warn('IndexedDB temizlenemedi:', error);
+        }
 
         completedData = {};
 
@@ -938,55 +1003,12 @@
 
     document.addEventListener(
         'DOMContentLoaded',
-        function () {
-
-            /*
-             * LocalStorage'ın çalışıp çalışmadığını
-             * kontrol ediyoruz.
-             */
-
-            try {
-
-                const testKey =
-                    '__esma_storage_test__';
-
-                localStorage.setItem(
-                    testKey,
-                    'ok'
-                );
-
-                localStorage.removeItem(
-                    testKey
-                );
-
-                console.log(
-                    'LocalStorage kullanılabilir.'
-                );
-
-            } catch (error) {
-
-                console.error(
-                    'LocalStorage kullanılamıyor:',
-                    error
-                );
-            }
-
-
-            /*
-             * İlk tamamlanmamış Esma'yı tekrar hesapla.
-             */
-
-            completedData =
-                loadCompletedData();
-
-            currentIndex =
-                getInitialIndex();
-
-
-            /*
-             * Uygulamayı göster.
-             */
-
+        async function () {
+            // Önce kayıtları yükle, sonra uygulamayı göster.
+            // Böylece iPhone Safari'de kayıt gelmeden 1. Esma'nın
+            // ekrana basılması gibi bir yarış durumu oluşmaz.
+            completedData = await loadCompletedData();
+            currentIndex = getInitialIndex();
             renderApp('left');
         }
     );
