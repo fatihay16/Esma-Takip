@@ -11,9 +11,6 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/pwabuilder/assets/main/icon-512x512.png">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Esma Takip">
     <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/pwabuilder/assets/main/icon-512x512.png">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Amiri:wght@600;700&display=swap" rel="stylesheet">
@@ -132,33 +129,13 @@
             will-change: transform, opacity;
         }
 
-        .main-card.origin-left {
-            transform-origin: left center;
-        }
+        .main-card.origin-left { transform-origin: left center; }
+        .main-card.origin-right { transform-origin: right center; }
 
-        .main-card.origin-right {
-            transform-origin: right center;
-        }
-
-        .main-card.flip-out-left {
-            transform: rotateY(-90deg) scale(0.9);
-            opacity: 0;
-        }
-
-        .main-card.flip-out-right {
-            transform: rotateY(90deg) scale(0.9);
-            opacity: 0;
-        }
-
-        .main-card.flip-in-left {
-            transform: rotateY(90deg) scale(0.9);
-            opacity: 0;
-        }
-
-        .main-card.flip-in-right {
-            transform: rotateY(-90deg) scale(0.9);
-            opacity: 0;
-        }
+        .main-card.flip-out-left { transform: rotateY(-90deg) scale(0.9); opacity: 0; }
+        .main-card.flip-out-right { transform: rotateY(90deg) scale(0.9); opacity: 0; }
+        .main-card.flip-in-left { transform: rotateY(90deg) scale(0.9); opacity: 0; }
+        .main-card.flip-in-right { transform: rotateY(-90deg) scale(0.9); opacity: 0; }
 
         .main-card.completed {
             background-color: var(--success-bg);
@@ -197,9 +174,7 @@
             direction: rtl;
         }
 
-        .main-card.completed .esma-arabic {
-            color: #1b4332;
-        }
+        .main-card.completed .esma-arabic { color: #1b4332; }
 
         .esma-count-badge {
             font-size: 1rem;
@@ -225,9 +200,7 @@
             padding: 0 10px;
         }
 
-        .main-card.completed .esma-desc {
-            color: #2d6a4f;
-        }
+        .main-card.completed .esma-desc { color: #2d6a4f; }
 
         .completion-date {
             font-size: 0.8rem;
@@ -237,9 +210,7 @@
             display: none;
         }
 
-        .main-card.completed .completion-date {
-            display: block;
-        }
+        .main-card.completed .completion-date { display: block; }
 
         .btn-action {
             background: var(--primary);
@@ -255,13 +226,8 @@
             transition: transform 0.1s, background 0.2s;
         }
 
-        .btn-action:active {
-            transform: scale(0.98);
-        }
-
-        .main-card.completed .btn-action {
-            background: #2d6a4f;
-        }
+        .btn-action:active { transform: scale(0.98); }
+        .main-card.completed .btn-action { background: #2d6a4f; }
 
         .next-preview {
             background: white;
@@ -364,7 +330,7 @@
             { id: 22, name: "Yâ Bāsit", arabic: "الباسط", count: "1448", desc: "Dilediğinin rızkını genişleten, ferahlık veren" },
             { id: 23, name: "Yâ Hâfid", arabic: "الخافض", count: "1448", desc: "Kafirleri ve gururluları alçaltan" },
             { id: 24, name: "Yâ Râfi'", arabic: "الرافع", count: "1448", desc: "Şeref veren, dereceyi yükselten" },
-            { id: 25, name: "Yâ Muiz", arabic: "المعز", count: "1448", desc: "Dilediğini aziz kılan, onurlandıran" },
+            { id: 25, name: "Yâ Muiz", arabic: "المعز", count: "1448", desc: "Dilediğini aziz kılan, onurlandırılan" },
             { id: 26, name: "Yâ Müzill", arabic: "المذل", count: "1448", desc: "Dilediğini zillete düşüren, hor kılan" },
             { id: 27, name: "Yâ Semî'", arabic: "السميع", count: "1448", desc: "Her şeyi en iyi işiten" },
             { id: 28, name: "Yâ Basîr", arabic: "البصير", count: "1448", desc: "Her şeyi en ince detayına kadar gören" },
@@ -441,285 +407,278 @@
             { id: 99, name: "Yâ Sabûr", arabic: "الصبور", count: "1448", desc: "Çok sabırlı, cezada acele etmeyen" }
         ];
 
+        const STORAGE_KEY = 'esma_takip_v1';
+        const DB_NAME = 'EsmaTakipDB';
+        const DB_VERSION = 1;
+        const DB_STORE = 'app';
 
-    const STORAGE_KEY = 'esma_takip_v1';
-    const DB_NAME = 'EsmaTakipDB';
-    const DB_VERSION = 1;
-    const DB_STORE = 'app';
+        // GEREKLİ DEĞİŞKENLER TANIMLANDI
+        let completedData = {};
+        let currentIndex = 0;
 
-    // KRİTİK DÜZELTME 1: Global değişken tanımlandı
-    let completedData = {};
-    let currentIndex = 0;
-
-    /* ============================================================
-       SAFARI UYUMLU KALICI KAYIT SİSTEMİ
-       ============================================================ */
-
-    function readLocalStorage() {
-        try {
-            const saved = localStorage.getItem(STORAGE_KEY);
-            if (!saved) return {};
-            const parsed = JSON.parse(saved);
-            return parsed && typeof parsed === 'object' ? parsed : {};
-        } catch (error) {
-            return {};
-        }
-    }
-
-    function writeLocalStorage(data) {
-        try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-            return true;
-        } catch (error) {
-            return false;
-        }
-    }
-
-    function openDatabase() {
-        return new Promise((resolve, reject) => {
-            if (!('indexedDB' in window)) {
-                reject(new Error('IndexedDB desteklenmiyor.'));
-                return;
+        function readLocalStorage() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (!saved) return {};
+                const parsed = JSON.parse(saved);
+                return parsed && typeof parsed === 'object' ? parsed : {};
+            } catch (error) {
+                return {};
             }
+        }
 
-            const request = indexedDB.open(DB_NAME, DB_VERSION);
+        function writeLocalStorage(data) {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+                return true;
+            } catch (error) {
+                return false;
+            }
+        }
 
-            request.onupgradeneeded = function (e) {
-                const db = e.target.result;
-                if (!db.objectStoreNames.contains(DB_STORE)) {
-                    db.createObjectStore(DB_STORE);
+        function openDatabase() {
+            return new Promise((resolve, reject) => {
+                if (!('indexedDB' in window)) {
+                    reject(new Error('IndexedDB desteklenmiyor.'));
+                    return;
                 }
-            };
 
-            request.onsuccess = () => resolve(request.result);
-            request.onerror = () => reject(request.error || new Error('IndexedDB açılamadı.'));
-        });
-    }
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
 
-    async function readIndexedDB() {
-        try {
+                request.onupgradeneeded = function (e) {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains(DB_STORE)) {
+                        db.createObjectStore(DB_STORE);
+                    }
+                };
+
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error || new Error('IndexedDB açılamadı.'));
+            });
+        }
+
+        async function readIndexedDB() {
+            try {
+                const db = await openDatabase();
+                return new Promise((resolve, reject) => {
+                    const tx = db.transaction(DB_STORE, 'readonly');
+                    const store = tx.objectStore(DB_STORE);
+                    const request = store.get('completedData');
+
+                    request.onsuccess = () => resolve(request.result || null);
+                    request.onerror = () => reject(request.error);
+                    tx.oncomplete = () => db.close();
+                });
+            } catch (e) {
+                return null;
+            }
+        }
+
+        async function writeIndexedDB(data) {
             const db = await openDatabase();
             return new Promise((resolve, reject) => {
-                const tx = db.transaction(DB_STORE, 'readonly');
+                const tx = db.transaction(DB_STORE, 'readwrite');
                 const store = tx.objectStore(DB_STORE);
-                const request = store.get('completedData');
+                store.put(data, 'completedData');
 
-                request.onsuccess = () => resolve(request.result || null);
-                request.onerror = () => reject(request.error);
-                
-                // Safari güvenliği için bağlantıyı kapat
-                tx.oncomplete = () => db.close();
+                tx.oncomplete = () => {
+                    db.close();
+                    resolve(true);
+                };
+                tx.onerror = () => {
+                    db.close();
+                    reject(false);
+                };
             });
-        } catch (e) {
-            return null;
         }
-    }
 
-    async function writeIndexedDB(data) {
-        const db = await openDatabase();
-        return new Promise((resolve, reject) => {
-            const tx = db.transaction(DB_STORE, 'readwrite');
-            const store = tx.objectStore(DB_STORE);
-            store.put(data, 'completedData');
+        async function loadCompletedData() {
+            let data = await readIndexedDB();
+            if (!data || Object.keys(data).length === 0) {
+                data = readLocalStorage();
+                if (Object.keys(data).length > 0) {
+                    await writeIndexedDB(data);
+                }
+            }
+            return data || {};
+        }
 
-            tx.oncomplete = () => {
-                db.close();
-                resolve(true);
-            };
-            tx.onerror = () => {
-                db.close();
-                reject(false);
-            };
-        });
-    }
-
-    async function loadCompletedData() {
-        let data = await readIndexedDB();
-        
-        if (!data || Object.keys(data).length === 0) {
-            data = readLocalStorage();
-            if (Object.keys(data).length > 0) {
+        async function saveCompletedData(data) {
+            writeLocalStorage(data);
+            try {
                 await writeIndexedDB(data);
+                return true;
+            } catch (error) {
+                return true;
             }
         }
-        return data || {};
-    }
 
-    async function saveCompletedData(data) {
-        // Çift Katmanlı Kayıt: Hem IndexedDB hem LocalStorage (Safari garantisi)
-        writeLocalStorage(data);
-        try {
-            await writeIndexedDB(data);
-            return true;
-        } catch (error) {
-            return true; // LocalStorage başarılıysa true dön
-        }
-    }
+        function getInitialIndex() {
+            if (!completedData || Object.keys(completedData).length === 0) {
+                return 0;
+            }
 
-    function getInitialIndex() {
-        if (!completedData || Object.keys(completedData).length === 0) {
+            for (let i = 0; i < esmalar.length; i++) {
+                const record = completedData[esmalar[i].id];
+                if (!record || record.completed !== true) {
+                    return i;
+                }
+            }
             return 0;
         }
 
-        for (let i = 0; i < esmalar.length; i++) {
-            const record = completedData[esmalar[i].id];
-            if (!record || record.completed !== true) {
-                return i;
+        function formatDateText(isoString) {
+            if (!isoString) return "";
+            const date = new Date(isoString);
+            if (isNaN(date.getTime())) return "";
+
+            const now = new Date();
+            const timeStr = date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+
+            const isToday = date.toDateString() === now.toDateString();
+            const yesterday = new Date(now);
+            yesterday.setDate(now.getDate() - 1);
+            const isYesterday = date.toDateString() === yesterday.toDateString();
+
+            if (isToday) return `Bugün, saat ${timeStr}`;
+            if (isYesterday) return `Dün, saat ${timeStr}`;
+
+            const dayStr = String(date.getDate()).padStart(2, '0');
+            const monthStr = String(date.getMonth() + 1).padStart(2, '0');
+            return `${dayStr}/${monthStr}/${date.getFullYear()} saat ${timeStr}`;
+        }
+
+        function renderApp(direction = 'left') {
+            const container = document.getElementById('cardContainer');
+            if (!container) return;
+
+            const item = esmalar[currentIndex];
+            if (!item) return;
+
+            const record = completedData[item.id] || { completed: false, date: null };
+            const isDone = record.completed === true;
+
+            const countDone = esmalar.filter(esma => completedData[esma.id]?.completed === true).length;
+            const completedCountElement = document.getElementById('completedCount');
+            if (completedCountElement) completedCountElement.innerText = countDone;
+
+            const dateTextFormatted = formatDateText(record.date);
+            const originClass = direction === 'left' ? 'origin-left' : 'origin-right';
+            const inClass = direction === 'left' ? 'flip-in-left' : 'flip-in-right';
+
+            container.innerHTML = `
+                <div class="main-card ${originClass} ${inClass} ${isDone ? 'completed' : ''}" id="activeCard">
+                    <div class="esma-badge">${item.id} / 99. Esma</div>
+                    <div class="esma-title">${item.name}</div>
+                    <div class="esma-arabic">${item.arabic}</div>
+                    <div class="esma-count-badge">Zikir Adedi: ${item.count}</div>
+                    <div class="esma-desc">${item.desc}</div>
+                    <div class="completion-date">Tamamlanma: ${dateTextFormatted}</div>
+                    <button class="btn-action" onclick="toggleCurrent()">
+                        ${isDone ? '✓ Tamamlandı (Geri Al)' : 'Okudum, İşaretle ve İlerle'}
+                    </button>
+                </div>
+            `;
+
+            requestAnimationFrame(() => {
+                const card = document.getElementById('activeCard');
+                if (card) card.classList.remove('flip-in-left', 'flip-in-right');
+            });
+
+            const nextIndex = (currentIndex + 1) % esmalar.length;
+            const nextName = document.getElementById('nextName');
+            if (nextName) {
+                nextName.innerText = `${esmalar[nextIndex].id}. ${esmalar[nextIndex].name} - ${esmalar[nextIndex].arabic} (${esmalar[nextIndex].count} defa)`;
             }
         }
-        return 0;
-    }
 
-    function formatDateText(isoString) {
-        if (!isoString) return "";
-        const date = new Date(isoString);
-        if (isNaN(date.getTime())) return "";
+        async function toggleCurrent() {
+            const item = esmalar[currentIndex];
+            if (!item) return;
 
-        const now = new Date();
-        const timeStr = date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+            const currentStatus = completedData[item.id]?.completed === true;
 
-        const isToday = date.toDateString() === now.toDateString();
-        
-        const yesterday = new Date(now);
-        yesterday.setDate(now.getDate() - 1);
-        const isYesterday = date.toDateString() === yesterday.toDateString();
+            if (!currentStatus) {
+                completedData[item.id] = {
+                    completed: true,
+                    date: new Date().toISOString()
+                };
 
-        if (isToday) return `Bugün, saat ${timeStr}`;
-        if (isYesterday) return `Dün, saat ${timeStr}`;
+                await saveCompletedData(completedData);
 
-        const dayStr = String(date.getDate()).padStart(2, '0');
-        const monthStr = String(date.getMonth() + 1).padStart(2, '0');
-        return `${dayStr}/${monthStr}/${date.getFullYear()} saat ${timeStr}`;
-    }
-
-    function renderApp(direction = 'left') {
-        const container = document.getElementById('cardContainer');
-        if (!container) return;
-
-        const item = esmalar[currentIndex];
-        if (!item) return;
-
-        const record = completedData[item.id] || { completed: false, date: null };
-        const isDone = record.completed === true;
-
-        const countDone = esmalar.filter(esma => completedData[esma.id]?.completed === true).length;
-        const completedCountElement = document.getElementById('completedCount');
-        if (completedCountElement) completedCountElement.innerText = countDone;
-
-        const dateTextFormatted = formatDateText(record.date);
-        const originClass = direction === 'left' ? 'origin-left' : 'origin-right';
-        const inClass = direction === 'left' ? 'flip-in-left' : 'flip-in-right';
-
-        container.innerHTML = `
-            <div class="main-card ${originClass} ${inClass} ${isDone ? 'completed' : ''}" id="activeCard">
-                <div class="esma-badge">${item.id} / 99. Esma</div>
-                <div class="esma-title">${item.name}</div>
-                <div class="esma-arabic">${item.arabic}</div>
-                <div class="esma-count-badge">Zikir Adedi: ${item.count}</div>
-                <div class="esma-desc">${item.desc}</div>
-                <div class="completion-date">Tamamlanma: ${dateTextFormatted}</div>
-                <button class="btn-action" onclick="toggleCurrent()">
-                    ${isDone ? '✓ Tamamlandı (Geri Al)' : 'Okudum, İşaretle ve İlerle'}
-                </button>
-            </div>
-        `;
-
-        requestAnimationFrame(() => {
-            const card = document.getElementById('activeCard');
-            if (card) card.classList.remove('flip-in-left', 'flip-in-right');
-        });
-
-        const nextIndex = (currentIndex + 1) % esmalar.length;
-        const nextName = document.getElementById('nextName');
-        if (nextName) {
-            nextName.innerText = `${esmalar[nextIndex].id}. ${esmalar[nextIndex].name} - ${esmalar[nextIndex].arabic} (${esmalar[nextIndex].count} defa)`;
-        }
-    }
-
-    async function toggleCurrent() {
-        const item = esmalar[currentIndex];
-        if (!item) return;
-
-        const currentStatus = completedData[item.id]?.completed === true;
-
-        if (!currentStatus) {
-            completedData[item.id] = {
-                completed: true,
-                date: new Date().toISOString()
-            };
-
-            await saveCompletedData(completedData);
-
-            if (currentIndex < esmalar.length - 1) {
-                changeIndex(1, 'left');
+                if (currentIndex < esmalar.length - 1) {
+                    changeIndex(1, 'left');
+                } else {
+                    renderApp('left');
+                }
             } else {
+                completedData[item.id] = { completed: false, date: null };
+                await saveCompletedData(completedData);
                 renderApp('left');
             }
-        } else {
-            completedData[item.id] = { completed: false, date: null };
-            await saveCompletedData(completedData);
+        }
+
+        function changeIndex(directionValue, directionName) {
+            const card = document.getElementById('activeCard');
+            if (!card) return;
+
+            card.classList.add(directionName === 'left' ? 'origin-left' : 'origin-right');
+            card.classList.add(directionName === 'left' ? 'flip-out-left' : 'flip-out-right');
+
+            setTimeout(() => {
+                currentIndex += directionValue;
+                if (currentIndex < 0) currentIndex = esmalar.length - 1;
+                if (currentIndex >= esmalar.length) currentIndex = 0;
+                renderApp(directionName);
+            }, 400);
+        }
+
+        async function resetAll() {
+            if (!confirm('Tüm ilerlemeniz ve tarih kayıtlarınız sıfırlansın mı?')) return;
+
+            try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+
+            try {
+                const db = await openDatabase();
+                const tx = db.transaction(DB_STORE, 'readwrite');
+                tx.objectStore(DB_STORE).delete('completedData');
+                tx.oncomplete = () => db.close();
+            } catch (e) {}
+
+            completedData = {};
+            currentIndex = 0;
             renderApp('left');
         }
-    }
 
-    function changeIndex(directionValue, directionName) {
-        const card = document.getElementById('activeCard');
-        if (!card) return;
-
-        card.classList.add(directionName === 'left' ? 'origin-left' : 'origin-right');
-        card.classList.add(directionName === 'left' ? 'flip-out-left' : 'flip-out-right');
-
-        setTimeout(() => {
-            currentIndex += directionValue;
-            if (currentIndex < 0) currentIndex = esmalar.length - 1;
-            if (currentIndex >= esmalar.length) currentIndex = 0;
-            renderApp(directionName);
-        }, 400);
-    }
-
-    async function resetAll() {
-        if (!confirm('Tüm ilerlemeniz ve tarih kayıtlarınız sıfırlansın mı?')) return;
-
-        try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
-
-        try {
-            const db = await openDatabase();
-            const tx = db.transaction(DB_STORE, 'readwrite');
-            tx.objectStore(DB_STORE).delete('completedData');
-            tx.oncomplete = () => db.close();
-        } catch (e) {}
-
-        completedData = {};
-        currentIndex = 0;
-        renderApp('left');
-    }
-
-    // UYGULAMA BAŞLANGICI
-    document.addEventListener('DOMContentLoaded', async function () {
-        completedData = await loadCompletedData();
-        currentIndex = getInitialIndex();
-        renderApp('left');
-    });
-
-    /* Swipe ve Service Worker İşlemleri */
-    let touchStartX = 0;
-    let touchEndX = 0;
-    const viewport = document.getElementById('cardViewport');
-
-    if (viewport) {
-        viewport.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, { passive: true });
-        viewport.addEventListener('touchend', e => {
-            touchEndX = e.changedTouches[0].screenX;
-            const diff = touchEndX - touchStartX;
-            if (Math.abs(diff) > 50) {
-                changeIndex(diff > 0 ? -1 : 1, diff > 0 ? 'right' : 'left');
-            }
-        }, { passive: true });
-    }
-
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./sw.js').catch(() => {});
+        // UYGULAMA DÖNGÜSÜ BAŞLANGICI
+        document.addEventListener('DOMContentLoaded', async function () {
+            completedData = await loadCompletedData();
+            currentIndex = getInitialIndex();
+            renderApp('left');
         });
-    }
-</script>
+
+        // DOKUNMATİK KAYDIRMA (SWIPE)
+        let touchStartX = 0;
+        let touchEndX = 0;
+        const viewport = document.getElementById('cardViewport');
+
+        if (viewport) {
+            viewport.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, { passive: true });
+            viewport.addEventListener('touchend', e => {
+                touchEndX = e.changedTouches[0].screenX;
+                const diff = touchEndX - touchStartX;
+                if (Math.abs(diff) > 50) {
+                    changeIndex(diff > 0 ? -1 : 1, diff > 0 ? 'right' : 'left');
+                }
+            }, { passive: true });
+        }
+
+        // SERVICE WORKER KAYDI
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').catch(() => {});
+            });
+        }
+    </script>
+</body>
+</html>
