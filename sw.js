@@ -1,4 +1,4 @@
-const CACHE_NAME = 'esma-v2';
+const CACHE_NAME = 'esma-v3'; // Önbellek sürümünü güncelledik
 
 const STATIC_ASSETS = [
     './',
@@ -6,174 +6,98 @@ const STATIC_ASSETS = [
     './manifest.json'
 ];
 
-
 /* ============================================================
    SERVICE WORKER KURULUMU
    ============================================================ */
-
 self.addEventListener('install', event => {
-
     event.waitUntil(
-
-        caches.open(CACHE_NAME)
-            .then(cache => {
-
-                return cache.addAll(STATIC_ASSETS);
-
-            })
+        caches.open(CACHE_NAME).then(cache => {
+            return cache.addAll(STATIC_ASSETS);
+        })
     );
-
-    /*
-     * Yeni Service Worker'ın beklemeden aktif olmasını sağlar.
-     */
-
+    // Yeni Service Worker'ın Safari'de beklemeden hemen aktifleşmesini sağla
     self.skipWaiting();
 });
-
 
 /* ============================================================
    SERVICE WORKER AKTİVASYONU
    ============================================================ */
-
 self.addEventListener('activate', event => {
-
     event.waitUntil(
-
-        caches.keys()
-            .then(cacheNames => {
-
-                return Promise.all(
-
-                    cacheNames.map(cacheName => {
-
-                        if (cacheName !== CACHE_NAME) {
-
-                            return caches.delete(cacheName);
-                        }
-
-                    })
-                );
-
-            })
-            .then(() => {
-
-                /*
-                 * Açık olan sayfaları yeni Service Worker'a geçir.
-                 */
-
-                return self.clients.claim();
-
-            })
+        caches.keys().then(cacheNames => {
+            return Promise.all(
+                cacheNames.map(cacheName => {
+                    // Eski önbellekleri temizle
+                    if (cacheName !== CACHE_NAME) {
+                        return caches.delete(cacheName);
+                    }
+                })
+            );
+        }).then(() => {
+            // Safari'de açık kalan sekmelerin kontrolünü anında devral
+            return self.clients.claim();
+        })
     );
 });
 
-
 /* ============================================================
-   DOSYA İSTEKLERİ
+   DOSYA VE İSTEK YÖNETİMİ (Safari Uyumlu Önbellek Stratejisi)
    ============================================================ */
-
 self.addEventListener('fetch', event => {
+    if (event.request.method !== 'GET') return;
 
-    /*
-     * Sadece GET isteklerini ele al.
-     */
+    const requestURL = new URL(event.request.url);
 
-    if (event.request.method !== 'GET') {
-        return;
-    }
-
-
-    const requestURL = new URL(
-        event.request.url
-    );
-
-
-    /*
-     * Başka domainlere yapılan istekleri
-     * Service Worker yönetmesin.
-     *
-     * Örneğin Google Fonts gibi harici dosyalar.
-     */
-
+    // Harici kaynakları (Google Fonts vb.) SW yönetmesin
     if (requestURL.origin !== self.location.origin) {
         return;
     }
 
-
     /*
-     * HTML sayfaları:
-     *
-     * Önce internetten güncel sürümü almaya çalış.
-     * İnternet yoksa cache kullan.
-     *
-     * Böylece eski index.html'in Safari'de
-     * sonsuza kadar cache'ten açılması engellenir.
+     * 1. HTML SAYFALARI (NETWORK FIRST)
+     * Safari'nin eski HTML sayfasını sonsuza kadar göstermesini engeller.
+     * Önce ağdan günceli çekmeye çalışır, internet yoksa önbelleği kullanır.
      */
-
-    if (
-        event.request.destination === 'document' ||
-        requestURL.pathname.endsWith('.html')
-    ) {
-
+    if (event.request.mode === 'navigate' || requestURL.pathname.endsWith('.html') || requestURL.pathname === '/') {
         event.respondWith(
-
             fetch(event.request)
                 .then(response => {
-
-                    /*
-                     * Güncel sayfayı cache'e de koy.
-                     */
-
-                    const responseClone =
-                        response.clone();
-
-                    caches.open(CACHE_NAME)
-                        .then(cache => {
-                            cache.put(
-                                event.request,
-                                responseClone
-                            );
-                        });
-
+                    if (!response || response.status !== 200) {
+                        return response;
+                    }
+                    const responseClone = response.clone();
+                    caches.open(CACHE_NAME).then(cache => {
+                        cache.put(event.request, responseClone);
+                    });
                     return response;
-
                 })
                 .catch(() => {
-
-                    /*
-                     * İnternet yoksa cache'teki sürümü kullan.
-                     */
-
-                    return caches.match(
-                        event.request
-                    );
-
+                    // İnternet bağlantısı yoksa önbellekten yükle
+                    return caches.match(event.request);
                 })
         );
-
         return;
     }
 
-
     /*
-     * Diğer yerel dosyalar:
-     *
-     * Önce cache,
-     * yoksa internet.
+     * 2. DİĞER DOSYALAR (STALE-WHILE-REVALIDATE)
+     * Resim, CSS veya Manifest gibi dosyaları önbellekten hızlıca sunar, 
+     * arka planda ağdan günceller.
      */
-
     event.respondWith(
-
-        caches.match(event.request)
-            .then(cachedResponse => {
-
-                if (cachedResponse) {
-                    return cachedResponse;
+        caches.match(event.request).then(cachedResponse => {
+            const fetchPromise = fetch(event.request).then(networkResponse => {
+                if (networkResponse && networkResponse.status === 200) {
+                    const responseClone = networkResponse.clone();
+                    caches.open(CACHE_NAME).then(cache => {
+                        cache.put(event.request, responseClone);
+                    });
                 }
+                return networkResponse;
+            }).catch(() => {/* İnternet yoksa sessizce yut */});
 
-                return fetch(event.request);
-
-            })
+            // Önbellekte varsa hemen ver, arka planda ağ isteğini çalıştır
+            return cachedResponse || fetchPromise;
+        })
     );
-
 });
