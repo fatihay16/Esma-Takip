@@ -890,9 +890,14 @@
         };
 
 
-        saveCompletedData();
-
-        renderApp('left');
+        saveCompletedData(completedData).then((saved) => {
+            if (!saved) {
+                // Kayıt başarısızsa durumu yeniden yüklemeden önce ekranda
+                // yanlış tamamlandı bilgisi göstermemek için geri al.
+                completedData[item.id] = { completed: true, date: completedData[item.id]?.date ?? null };
+            }
+            renderApp('left');
+        });
     }
 
 
