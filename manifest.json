@@ -4,7 +4,7 @@
   "short_name": "Esma Takip",
   "lang": "tr-TR",
   "dir": "ltr",
-  "startUrl": "https://fatihay16.github.io/Esma-Takip/"  "scope": "./",
+  "startUrl":  "./",
   "display": "standalone",
   "background_color": "#f8faf8",
   "theme_color": "#1b4332",
