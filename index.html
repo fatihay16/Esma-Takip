@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Esma-ül Hüsna Zikir Takibi</title>
+    <title>Abdülkadir Geylani Esma Zikri</title>
     
     <!-- PWA Gerekli Alanlar -->
     <link rel="manifest" href="manifest.json">
@@ -11,7 +11,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Esma Takip">
+    <meta name="apple-mobile-web-app-title" content="Abdülkadir Geylani Esma Zikri">
     <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/pwabuilder/assets/main/icon-512x512.png">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Amiri:wght@600;700&display=swap" rel="stylesheet">
     <style>
@@ -64,9 +64,33 @@
             letter-spacing: -0.5px;
         }
 
+        header h1 {
+            cursor: pointer;
+            user-select: none;
+        }
+
         header p {
             font-size: 0.85rem;
             opacity: 0.85;
+        }
+
+        .modal-box h3 {
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-size: 18px;
+            color: var(--primary);
+        }
+
+        .modal-box p {
+            line-height: 1.7;
+            margin-bottom: 14px;
+        }
+
+        .modal-quote {
+            padding: 12px 15px;
+            border-left: 3px solid #8b6f47;
+            background: rgba(139, 111, 71, 0.08);
+            border-radius: 6px;
         }
 
         .progress-box {
@@ -274,13 +298,148 @@
             color: var(--text-main);
             cursor: pointer;
         }
-    </style>
+
+        .info-link {
+            cursor: pointer;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+            transition: opacity 0.2s;
+        }
+
+        .info-link:active {
+            opacity: 0.7;
+        }
+
+        /* Bilgi ve 99 esma tamamlandı ekranları */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.68);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.25s ease, visibility 0.25s ease;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-box {
+            width: 100%;
+            max-width: 460px;
+            max-height: 88vh;
+            overflow-y: auto;
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 28px 22px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+            text-align: center;
+            transform: translateY(15px) scale(0.98);
+            transition: transform 0.25s ease;
+        }
+
+        .modal-overlay.show .modal-box {
+            transform: translateY(0) scale(1);
+        }
+
+        .modal-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 14px;
+            border-radius: 50%;
+            background: var(--success-bg);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+        }
+
+        .modal-box h2 {
+            color: var(--primary);
+            font-size: 1.35rem;
+            margin-bottom: 12px;
+        }
+
+        .modal-box p {
+            color: var(--text-main);
+            font-size: 0.94rem;
+            line-height: 1.65;
+            margin-bottom: 14px;
+        }
+
+        .modal-box .modal-note {
+            color: var(--text-muted);
+            font-size: 0.82rem;
+        }
+
+        .modal-close {
+            width: 100%;
+            margin-top: 12px;
+            padding: 14px;
+            border: none;
+            border-radius: 13px;
+            background: var(--primary);
+            color: white;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .completion-modal .modal-box {
+            border: 2px solid var(--success-border);
+        }
+
+        .completion-modal .modal-icon {
+            background: var(--primary);
+            color: white;
+        }
+
+        .completion-modal h2 {
+            font-size: 1.5rem;
+        }
+
+    
+        .completion-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 18px;
+        }
+
+        .completion-actions .modal-close,
+        .completion-actions .modal-reset {
+            margin-top: 0;
+            width: 100%;
+        }
+
+        .modal-reset {
+            padding: 14px;
+            border: none;
+            border-radius: 13px;
+            background: #8b6f47;
+            color: white;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .modal-reset:active {
+            transform: scale(0.98);
+        }
+</style>
 </head>
 <body>
 
     <header>
-        <h1>Esma-ül Hüsna Zikir Takibi</h1>
-        <p>Her esma için özel zikir adediyle huzurlu takip</p>
+        <h1 onclick="openInfoModal()">Abdülkadir Geylani Esma Zikri</h1>
+        <p>(Zikrin nasıl yapılacağı ile ilgili bilgi için başlığa tıklayın)</p>
     </header>
 
     <div class="progress-box">
@@ -302,6 +461,210 @@
     <div class="nav-buttons">
         <button class="btn-nav" onclick="changeIndex(-1, 'right')">Önceki</button>
         <button class="btn-nav" onclick="changeIndex(1, 'left')">Sonraki</button>
+    </div>
+
+
+    <!-- Zikir yapılışı bilgi ekranı -->
+    <div class="modal-overlay" id="infoModal" role="dialog" aria-modal="true" aria-labelledby="infoModalTitle">
+        <div class="modal-box">
+            <div class="modal-icon">☾</div>
+            <h2 id="infoModalTitle">Zikir Nasıl Yapılır?</h2>
+
+            <p>
+                Selamun aleyküm kıymetli kardeşlerim,
+            </p>
+
+            <p>
+                Seyyidimiz’e Pirimiz Abdulkadir Geylani r.a tarafından icazeti verilen
+                son zikirin yapılma tarifini yapıyorum:
+            </p>
+
+            <p>
+                Herkes elinden geldiği kadar yılda 1 defa yapsın.<br>
+                Yapamıyorsa hiç olmazsa ömründe 1 defa yapsın.
+            </p>
+
+            <h3>Başlangıç</h3>
+
+            <p>
+                Yapacak kişi 2 rekat hacet namazı kılar.
+            </p>
+
+            <p>
+                Hacet namazı bir defa ilk zikre başlanırken yapılır,
+                sadece bir defa kılınır.
+            </p>
+
+            <p>
+                Namazın son secdesinde niyetini şu şekilde Allah'tan ister:
+            </p>
+
+            <p class="modal-quote">
+                “Ya Rabbi senin 99 ismini zikretmeye niyet ettim seni zikretmek için
+                ve sana şükretmek için ve sana güzel ibadet yapabilmek için bana kuvvet ver.”
+            </p>
+
+            <h3>99 Günlük Zikir</h3>
+
+            <p>
+                <strong>1. Gün:</strong> Ya Allah — 1448 adet<br>
+                <strong>2. Gün:</strong> Ya Rahman — 1448 adet<br>
+                <strong>3. Gün:</strong> Ya Rahim — 1448 adet<br>
+                <strong>4. Gün:</strong> Ya Melik — 1448 adet<br>
+                <strong>5. Gün:</strong> Ya Kuddüs — 1448 adet<br>
+                <strong>6. Gün:</strong> …<br>
+                <strong>7. Gün:</strong> …<br>
+                <strong>8. Gün:</strong> …<br>
+                .<br>
+                .<br>
+                .<br>
+                <strong>99. Gün:</strong> Ya Sabur — 1448 adet
+            </p>
+
+            <p>
+                Her gün bir sonraki ismi 1448 adet zikredecek taa
+                Esmaül Hüsna’nın hepsini bitirinceye kadar.
+            </p>
+
+            <p>
+                İnşaallah gireceğimiz Hicri yıl 1448 olduğu için her esmayı
+                1448 defa her gün zikredecek.
+            </p>
+
+            <p>
+                Ve bu kıyamete kadar böyle.
+            </p>
+
+            <p>
+                Zikir sayısı her sene kıyamete kadar böyle çoğalır.
+            </p>
+
+            <h3>Zikir Tamamlandıktan Sonra</h3>
+
+            <p>
+                Esmaül Hüsna bittikten sonra yani 100 gün sonra bitiren kardeşimiz
+                2 rekat şükür namazı kılacak.
+            </p>
+
+            <p>
+                Namazın son secdesinde Rabbine, ona bütün isimleriyle zikir yapma
+                fırsatı verdiği için şükredecek.
+            </p>
+
+            <p>
+                Ardından ciddi bir tövbe edecek.
+            </p>
+
+            <p>
+                Bunu kim yapar ise Allah'ın izniyle günahları bağışlanır,
+                işi rast gider, rızkı bol olur ve devamlı düşmanlara karşı galip olur.
+            </p>
+
+            <p>
+                Cenabı Allah hayırlı mübarek eylesin.
+            </p>
+
+            <h3>Bir Gün Zikir Yapılamazsa</h3>
+
+            <p>
+                Örneğin:
+            </p>
+
+            <p class="modal-quote">
+                1. gün Ya Allah 1448 çektik.<br>
+                2. gün unuttuk veya sefere çıktık.<br>
+                3. gün Ya Rahmanı 1448 defa çekeceğiz.<br>
+                4. gün Ya Rahimi 1448 defa çekeceğiz.
+            </p>
+
+            <p>
+                Yani nerede kaldıysak ordan devam edeceğiz.
+            </p>
+
+            <p>
+                Her gün sadece bir adet esma çekilir.
+            </p>
+
+            <p>
+                Hangi hicri yıldaysak o kadar çekilir.
+            </p>
+
+            <p>
+                Hergün 1 esma çekilebilir.
+            </p>
+
+            <p>
+                1448 adet yaklaşık 10-15 dakikanızı alır.
+            </p>
+
+            <h3>Son Söz</h3>
+
+            <p>
+                Bu büyük nimete ne kadar şükretsek azdır.
+                İnşallah ihmal etmeyelim.
+            </p>
+
+            <p>
+                Haftalık zikirlerimizle nefis zikirleriyle tamamen ayrıdır.
+                O zikirler devam edecek.
+            </p>
+
+            <p>
+                Rabbim Seyyidimizi başımızdan eksik etmesin bu yolda bizi
+                sabit kadem eylesin dünya ve ahiret bizi ayırmasın.
+            </p>
+
+            <p>
+                Zikirlerimizi izzeti dergahında en güzel şekilde kabul buyursun.
+            </p>
+
+            <p>
+                Velhamdulillahi Rabbil alemin.
+            </p>
+
+            <button class="modal-close" onclick="closeInfoModal()">Kapat</button>
+        </div>
+    </div>
+
+    <!-- 99 esma tamamlandı ekranı -->
+    <div class="modal-overlay completion-modal" id="completionModal" role="dialog" aria-modal="true" aria-labelledby="completionModalTitle">
+        <div class="modal-box">
+            <div class="modal-icon">✓</div>
+            <h2 id="completionModalTitle">Maşallah, 99 Esmanın Tamamı Bitti</h2>
+
+            <p>
+                Esmaül Hüsna bittikten sonra yani 99 gün sonra bitiren kardeşimiz
+                2 rekat şükür namazı kılacak.
+            </p>
+
+            <p>
+                Namazın son secdesinde Rabbine, ona bütün isimleriyle zikir yapma
+                fırsatı verdiği için şükredecek.
+            </p>
+
+            <p>
+                Ardından ciddi bir tövbe edecek.
+            </p>
+
+            <p>
+                Bunu kim yapar ise Allah'ın izniyle günahları bağışlanır, işi rast gider,
+                rızkı bol olur ve devamlı düşmanlara karşı galip olur. Cenabı Allah
+                hayırlı mübarek eylesin.
+            </p>
+
+            <p class="modal-note">
+                <strong>Allah yaptığımız zikirleri kabul eylesin.</strong>
+            </p>
+
+            <p>
+                Yeni bir zikre başlamak ister misiniz?
+            </p>
+
+            <div class="completion-actions">
+                <button class="modal-close" onclick="closeCompletionModal()">Kapat</button>
+                <button class="modal-reset" onclick="restartZikir()">Sayaçları Sıfırla ve Tekrar Başla</button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -349,8 +712,8 @@
             { id: 41, name: "Yâ Hasîb", arabic: "الحسيب", count: "1448", desc: "Kullarını en iyi gören, kafi gelen" },
             { id: 42, name: "Yâ Celîl", arabic: "الجليل", count: "1448", desc: "Celal ve azamet sahibi, yüce" },
             { id: 43, name: "Yâ Kerîm", arabic: "الكريم", count: "1448", desc: "İkramı bol, cömert, kerem sahibi" },
-            { id: 44, name: "Yâ Rakîp", arabic: "الرقيب", count: "1448", desc: "Her varlığı ve işi sürekli gözetim altında tutan" },
-            { id: 45, name: "Yâ Mücîp", arabic: "المجيب", count: "1448", desc: "Dualara ve isteklere karşılık veren, icabet eden" },
+            { id: 44, name: "Yâ Rakîb", arabic: "الرقيب", count: "1448", desc: "Her varlığı ve işi sürekli gözetim altında tutan" },
+            { id: 45, name: "Yâ Mücîb", arabic: "المجيب", count: "1448", desc: "Dualara ve isteklere karşılık veren, icabet eden" },
             { id: 46, name: "Yâ Vâsi'", arabic: "الواسع", count: "1448", desc: "Rahmeti, ilmi ve kudretiyle her şeyi kuşatan" },
             { id: 47, name: "Yâ Hakîm", arabic: "الحكيم", count: "1448", desc: "Her işinde hikmet ve denge olan" },
             { id: 48, name: "Yâ Vedûd", arabic: "الودود", count: "1448", desc: "Kullarını en çok seven, sevilmeye en layık olan" },
@@ -592,6 +955,43 @@
             }
         }
 
+
+        function openInfoModal() {
+            const modal = document.getElementById('infoModal');
+            if (modal) modal.classList.add('show');
+        }
+
+        function closeInfoModal() {
+            const modal = document.getElementById('infoModal');
+            if (modal) modal.classList.remove('show');
+        }
+
+        function openCompletionModal() {
+            const modal = document.getElementById('completionModal');
+            if (modal) modal.classList.add('show');
+        }
+
+        function closeCompletionModal() {
+            const modal = document.getElementById('completionModal');
+            if (modal) modal.classList.remove('show');
+        }
+
+        async function restartZikir() {
+            const answer = confirm(
+                '99 Esmanın tamamı bitti. Sayaçları ve ilerlemeyi sıfırlayıp baştan başlamak istiyor musunuz?'
+            );
+
+            if (!answer) return;
+
+            closeCompletionModal();
+            await resetAll(true);
+        }
+
+        function isAllCompleted() {
+            return esmalar.length === 99 &&
+                esmalar.every(esma => completedData[esma.id]?.completed === true);
+        }
+
         async function toggleCurrent() {
             const item = esmalar[currentIndex];
             if (!item) return;
@@ -606,7 +1006,10 @@
 
                 await saveCompletedData(completedData);
 
-                if (currentIndex < esmalar.length - 1) {
+                if (isAllCompleted()) {
+                    renderApp('left');
+                    openCompletionModal();
+                } else if (currentIndex < esmalar.length - 1) {
                     changeIndex(1, 'left');
                 } else {
                     renderApp('left');
@@ -633,8 +1036,8 @@
             }, 400);
         }
 
-        async function resetAll() {
-            if (!confirm('Tüm ilerlemeniz ve tarih kayıtlarınız sıfırlansın mı?')) return;
+        async function resetAll(skipConfirmation = false) {
+            if (!skipConfirmation && !confirm('Tüm ilerlemeniz ve tarih kayıtlarınız sıfırlansın mı?')) return;
 
             try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
 
@@ -649,6 +1052,17 @@
             currentIndex = 0;
             renderApp('left');
         }
+
+
+        // Bilgi ekranında dışarı tıklayınca da kapanabilsin.
+        document.getElementById('infoModal')?.addEventListener('click', function(e) {
+            if (e.target === this) closeInfoModal();
+        });
+
+        // ESC sadece bilgi ekranını kapatır; 99 esma ekranı düğme ile kapanır.
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeInfoModal();
+        });
 
         // UYGULAMA DÖNGÜSÜ BAŞLANGICI
         document.addEventListener('DOMContentLoaded', async function () {
