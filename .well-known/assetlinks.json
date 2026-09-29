@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "io.github.fatihay16.twa",
+      "sha256_cert_fingerprints": [
+        "9D:23:27:C5:CB:04:AA:3D:30:A5:38:CF:E5:25:51:94:8B:72:91:89:BA:B8:C5:8E:FE:1B:F3:44:E3:54:7B:2F"
+      ]
+    }
+  }
+]
