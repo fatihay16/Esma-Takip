@@ -19,8 +19,8 @@
             --primary: #1b4332;
             --primary-light: #2d6a4f;
             --accent: #52b788;
-            --bg: #f8faf8;
-            --card-bg: #ffffff;
+            --bg: #071A2B;
+            --card-bg: rgba(14, 38, 58, 0.94);
             --text-main: #1e293b;
             --text-muted: #64748b;
             --success-bg: #d8f3dc;
@@ -139,27 +139,189 @@
             margin-bottom: 16px;
             perspective: 1200px;
             touch-action: pan-y;
+            isolation: isolate;
+        }
+
+        /* Nurlu beyaz hilal geçiş efekti */
+        .card-viewport::before {
+            content: "☾";
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%) scale(0.35) rotate(-25deg);
+            font-size: 13rem;
+            line-height: 1;
+            color: #ffffff;
+            opacity: 0;
+            z-index: 0;
+            pointer-events: none;
+            /* Beyaz ay ışığı + yumuşak nur */
+            text-shadow:
+                0 0 8px rgba(255,255,255,1),
+                0 0 18px rgba(255,255,255,0.98),
+                0 0 36px rgba(255,255,255,0.88),
+                0 0 65px rgba(255,255,255,0.62),
+                0 0 105px rgba(255,255,255,0.38);
+        }
+
+        /* Hilalin arkasından yayılan daha geniş, sisli nur */
+        .card-viewport::after {
+            content: "☾";
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%) scale(0.35) rotate(-25deg);
+            font-size: 13rem;
+            line-height: 1;
+            color: rgba(255,255,255,0.72);
+            opacity: 0;
+            z-index: 0;
+            pointer-events: none;
+            filter: blur(18px);
+        }
+
+        .card-viewport.swiping-left::before {
+            animation: crescentSweepLeft 0.68s ease-out both;
+        }
+
+        .card-viewport.swiping-right::before {
+            animation: crescentSweepRight 0.68s ease-out both;
+        }
+
+        .card-viewport.swiping-left::after {
+            animation: crescentGlowLeft 0.68s ease-out both;
+        }
+
+        .card-viewport.swiping-right::after {
+            animation: crescentGlowRight 0.68s ease-out both;
+        }
+
+        @keyframes crescentSweepLeft {
+            0% {
+                opacity: 0;
+                transform: translate(-20%, -50%) scale(0.25) rotate(-45deg);
+                filter: brightness(1);
+            }
+            18% {
+                opacity: 0.75;
+            }
+            38% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(0.88) rotate(-12deg);
+                filter: brightness(1.12);
+            }
+            58% {
+                opacity: 1;
+                filter: brightness(1.25);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(-80%, -50%) scale(1.18) rotate(18deg);
+                filter: brightness(1);
+            }
+        }
+
+        @keyframes crescentSweepRight {
+            0% {
+                opacity: 0;
+                transform: translate(-80%, -50%) scale(0.25) rotate(45deg);
+                filter: brightness(1);
+            }
+            18% {
+                opacity: 0.75;
+            }
+            38% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(0.88) rotate(12deg);
+                filter: brightness(1.12);
+            }
+            58% {
+                opacity: 1;
+                filter: brightness(1.25);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(-20%, -50%) scale(1.18) rotate(-18deg);
+                filter: brightness(1);
+            }
+        }
+
+        @keyframes crescentGlowLeft {
+            0% {
+                opacity: 0;
+                transform: translate(-20%, -50%) scale(0.20) rotate(-45deg);
+            }
+            38% {
+                opacity: 0.72;
+                transform: translate(-50%, -50%) scale(0.98) rotate(-12deg);
+            }
+            60% {
+                opacity: 0.48;
+            }
+            100% {
+                opacity: 0;
+                transform: translate(-80%, -50%) scale(1.35) rotate(18deg);
+            }
+        }
+
+        @keyframes crescentGlowRight {
+            0% {
+                opacity: 0;
+                transform: translate(-80%, -50%) scale(0.20) rotate(45deg);
+            }
+            38% {
+                opacity: 0.72;
+                transform: translate(-50%, -50%) scale(0.98) rotate(12deg);
+            }
+            60% {
+                opacity: 0.48;
+            }
+            100% {
+                opacity: 0;
+                transform: translate(-20%, -50%) scale(1.35) rotate(-18deg);
+            }
         }
 
         .main-card {
-            background: var(--card-bg);
+            background: rgba(14, 38, 58, 0.94);
             border-radius: 24px;
             padding: 28px 20px;
             text-align: center;
             box-shadow: 0 10px 30px rgba(0,0,0,0.06);
             border: 2px solid #e2e8f0;
             position: relative;
-            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;
-            will-change: transform, opacity;
+            z-index: 1;
+            transition: transform 0.55s cubic-bezier(0.22, 0.8, 0.25, 1), opacity 0.55s ease, border-radius 0.55s ease;
+            will-change: transform, opacity, border-radius;
         }
 
-        .main-card.origin-left { transform-origin: left center; }
-        .main-card.origin-right { transform-origin: right center; }
+        .main-card.origin-left { transform-origin: 15% 50%; }
+        .main-card.origin-right { transform-origin: 85% 50%; }
 
-        .main-card.flip-out-left { transform: rotateY(-90deg) scale(0.9); opacity: 0; }
-        .main-card.flip-out-right { transform: rotateY(90deg) scale(0.9); opacity: 0; }
-        .main-card.flip-in-left { transform: rotateY(90deg) scale(0.9); opacity: 0; }
-        .main-card.flip-in-right { transform: rotateY(-90deg) scale(0.9); opacity: 0; }
+        /* Kartı düz çevirmek yerine yay/hilal rotasında dışarı çıkar */
+        .main-card.flip-out-left {
+            transform: translate3d(-118%, 28px, 0) rotate(-18deg) scale(0.78);
+            border-radius: 48% 52% 52% 48% / 38% 62% 38% 62%;
+            opacity: 0;
+        }
+
+        .main-card.flip-out-right {
+            transform: translate3d(118%, 28px, 0) rotate(18deg) scale(0.78);
+            border-radius: 52% 48% 48% 52% / 62% 38% 62% 38%;
+            opacity: 0;
+        }
+
+        .main-card.flip-in-left {
+            transform: translate3d(105%, -22px, 0) rotate(16deg) scale(0.78);
+            border-radius: 52% 48% 48% 52% / 62% 38% 62% 38%;
+            opacity: 0;
+        }
+
+        .main-card.flip-in-right {
+            transform: translate3d(-105%, -22px, 0) rotate(-16deg) scale(0.78);
+            border-radius: 48% 52% 52% 48% / 38% 62% 38% 62%;
+            opacity: 0;
+        }
 
         .main-card.completed {
             background-color: var(--success-bg);
@@ -331,6 +493,9 @@
         }
 
         .modal-box {
+            position: relative;
+            z-index: 10000;
+            pointer-events: auto;
             width: 100%;
             max-width: 460px;
             max-height: 88vh;
@@ -430,10 +595,154 @@
             cursor: pointer;
         }
 
+        .modal-reset {
+            position: relative;
+            z-index: 10001;
+            pointer-events: auto !important;
+            touch-action: manipulation;
+        }
+
         .modal-reset:active {
             transform: scale(0.98);
         }
 </style>
+
+<style id="readability-enhancement">
+/* Esma kartındaki ana bilgileri gece zemininde daha belirgin yap */
+.main-card {
+    background: rgba(9, 28, 45, 0.97);
+    border: 1px solid rgba(255,255,255,0.18);
+    box-shadow:
+        0 14px 38px rgba(0,0,0,0.42),
+        0 0 0 1px rgba(255,255,255,0.04) inset;
+}
+
+.main-card .esma-number,
+.main-card .counter-label,
+.main-card .meaning,
+.main-card .translation,
+.main-card .esma-name {
+    text-shadow: 0 2px 8px rgba(0,0,0,0.72);
+}
+
+.main-card .esma-number {
+    color: #ffffff !important;
+    font-weight: 800 !important;
+    opacity: 1 !important;
+}
+
+.main-card .esma-name {
+    color: #ffffff !important;
+    font-weight: 800 !important;
+    opacity: 1 !important;
+}
+
+.main-card .arabic,
+.main-card .arabic-name,
+.main-card [class*="arabic"] {
+    color: #ffffff !important;
+    font-weight: 800 !important;
+    opacity: 1 !important;
+    text-shadow:
+        0 2px 10px rgba(0,0,0,0.8),
+        0 0 12px rgba(255,255,255,0.12);
+}
+
+.main-card .meaning,
+.main-card .translation {
+    color: #f5f9fc !important;
+    font-weight: 650 !important;
+    opacity: 1 !important;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.78);
+}
+
+.main-card p,
+.main-card span {
+    opacity: 1;
+}
+</style>
+
+
+<style id="gold-contrast-theme">
+/* Daha belirgin altın / gece mavisi renk hiyerarşisi */
+.main-card .esma-number,
+.main-card .counter-label {
+    color: #FFD76A !important;
+    font-weight: 900 !important;
+    text-shadow:
+        0 2px 8px rgba(0,0,0,0.8),
+        0 0 14px rgba(255,215,106,0.28);
+}
+
+.main-card .esma-name {
+    color: #FFD76A !important;
+    font-weight: 900 !important;
+    text-shadow:
+        0 2px 10px rgba(0,0,0,0.85),
+        0 0 18px rgba(255,215,106,0.22);
+}
+
+.main-card .arabic,
+.main-card .arabic-name,
+.main-card [class*="arabic"] {
+    color: #FFF4C2 !important;
+    font-weight: 900 !important;
+    text-shadow:
+        0 2px 10px rgba(0,0,0,0.85),
+        0 0 18px rgba(255,244,194,0.22);
+}
+
+.main-card .meaning,
+.main-card .translation {
+    color: #D9E9F5 !important;
+    font-weight: 700 !important;
+    text-shadow: 0 2px 9px rgba(0,0,0,0.85);
+}
+</style>
+
+
+<style id="final-readable-colors">
+/* Son renk ayarı: gece mavisi üzerinde yumuşak, uyumlu kontrast */
+.main-card .esma-badge {
+    color: #F6D98B !important;
+    background: rgba(246, 217, 139, 0.12) !important;
+    border-color: rgba(246, 217, 139, 0.32) !important;
+    font-weight: 800 !important;
+    text-shadow: 0 1px 6px rgba(0,0,0,0.75);
+}
+
+.main-card .esma-title {
+    color: #FFD66B !important;
+    font-weight: 900 !important;
+    text-shadow:
+        0 2px 9px rgba(0,0,0,0.82),
+        0 0 16px rgba(255,214,107,0.16);
+}
+
+.main-card .esma-arabic {
+    color: #FFFFFF !important;
+    font-weight: 800 !important;
+    opacity: 1 !important;
+    text-shadow:
+        0 2px 10px rgba(0,0,0,0.85),
+        0 0 12px rgba(255,255,255,0.12);
+}
+
+.main-card .esma-desc {
+    color: #DCECF4 !important;
+    background: rgba(113, 168, 194, 0.10) !important;
+    border-color: rgba(180, 220, 235, 0.22) !important;
+    font-weight: 700 !important;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.82);
+}
+
+.main-card .esma-count-badge {
+    color: #F4E8C1 !important;
+    background: rgba(218, 177, 74, 0.12) !important;
+    border-color: rgba(218, 177, 74, 0.28) !important;
+}
+</style>
+
 </head>
 <body>
 
@@ -444,7 +753,7 @@
 
     <div class="progress-box">
         <div class="progress-text">Tamamlanan: <span id="completedCount">0</span> / 99</div>
-        <button class="btn-reset" onclick="resetAll()">Sıfırla</button>
+        <button type="button" class="btn-reset" id="topResetBtn">Sıfırla</button>
     </div>
 
     <div class="card-viewport" id="cardViewport">
@@ -662,7 +971,7 @@
 
             <div class="completion-actions">
                 <button class="modal-close" onclick="closeCompletionModal()">Kapat</button>
-                <button class="modal-reset" onclick="restartZikir()">Sayaçları Sıfırla ve Tekrar Başla</button>
+                <button type="button" class="modal-reset" id="restartZikirBtn">Sayaçları Sıfırla ve Tekrar Başla</button>
             </div>
         </div>
     </div>
@@ -712,8 +1021,8 @@
             { id: 41, name: "Yâ Hasîb", arabic: "الحسيب", count: "1448", desc: "Kullarını en iyi gören, kafi gelen" },
             { id: 42, name: "Yâ Celîl", arabic: "الجليل", count: "1448", desc: "Celal ve azamet sahibi, yüce" },
             { id: 43, name: "Yâ Kerîm", arabic: "الكريم", count: "1448", desc: "İkramı bol, cömert, kerem sahibi" },
-            { id: 44, name: "Yâ Rakîp", arabic: "الرقيب", count: "1448", desc: "Her varlığı ve işi sürekli gözetim altında tutan" },
-            { id: 45, name: "Yâ Mücîp", arabic: "المجيب", count: "1448", desc: "Dualara ve isteklere karşılık veren, icabet eden" },
+            { id: 44, name: "Yâ Rakîb", arabic: "الرقيب", count: "1448", desc: "Her varlığı ve işi sürekli gözetim altında tutan" },
+            { id: 45, name: "Yâ Mücîb", arabic: "المجيب", count: "1448", desc: "Dualara ve isteklere karşılık veren, icabet eden" },
             { id: 46, name: "Yâ Vâsi'", arabic: "الواسع", count: "1448", desc: "Rahmeti, ilmi ve kudretiyle her şeyi kuşatan" },
             { id: 47, name: "Yâ Hakîm", arabic: "الحكيم", count: "1448", desc: "Her işinde hikmet ve denge olan" },
             { id: 48, name: "Yâ Vedûd", arabic: "الودود", count: "1448", desc: "Kullarını en çok seven, sevilmeye en layık olan" },
@@ -977,14 +1286,46 @@
         }
 
         async function restartZikir() {
-            const answer = confirm(
-                '99 Esmanın tamamı bitti. Sayaçları ve ilerlemeyi sıfırlayıp baştan başlamak istiyor musunuz?'
-            );
-
-            if (!answer) return;
-
+            // 99 Esma tamamlandı ekranındaki buton:
+            // onay penceresi yok; tıklanır tıklanmaz sıfırlar.
             closeCompletionModal();
-            await resetAll(true);
+
+            completedData = {};
+            currentIndex = 0;
+
+            const countElement = document.getElementById('completedCount');
+            if (countElement) countElement.textContent = '0';
+
+            renderApp('left');
+
+            // LocalStorage'ı hemen temizle.
+            try {
+                localStorage.removeItem(STORAGE_KEY);
+            } catch (e) {
+                console.error('LocalStorage temizlenemedi:', e);
+            }
+
+            // IndexedDB kaydını da temizle.
+            try {
+                const db = await openDatabase();
+
+                await new Promise((resolve, reject) => {
+                    const tx = db.transaction(DB_STORE, 'readwrite');
+                    const request = tx.objectStore(DB_STORE).delete('completedData');
+
+                    request.onsuccess = () => resolve();
+                    request.onerror = () => reject(request.error);
+                    tx.onerror = () => reject(tx.error);
+                    tx.onabort = () => reject(tx.error);
+                });
+
+                db.close();
+            } catch (e) {
+                console.error('IndexedDB temizlenemedi:', e);
+            }
+
+            // Sıfırlamanın kalıcı olduğunu garanti etmek için sayfayı yenile.
+            window.location.reload();
         }
 
         function isAllCompleted() {
@@ -1021,9 +1362,22 @@
             }
         }
 
+        let isTransitioning = false;
+
         function changeIndex(directionValue, directionName) {
+            if (isTransitioning) return;
+
             const card = document.getElementById('activeCard');
+            const viewport = document.getElementById('cardViewport');
             if (!card) return;
+
+            isTransitioning = true;
+
+            if (viewport) {
+                viewport.classList.remove('swiping-left', 'swiping-right');
+                void viewport.offsetWidth;
+                viewport.classList.add(directionName === 'left' ? 'swiping-left' : 'swiping-right');
+            }
 
             card.classList.add(directionName === 'left' ? 'origin-left' : 'origin-right');
             card.classList.add(directionName === 'left' ? 'flip-out-left' : 'flip-out-right');
@@ -1033,24 +1387,66 @@
                 if (currentIndex < 0) currentIndex = esmalar.length - 1;
                 if (currentIndex >= esmalar.length) currentIndex = 0;
                 renderApp(directionName);
-            }, 400);
+
+                setTimeout(() => {
+                    isTransitioning = false;
+                    if (viewport) viewport.classList.remove('swiping-left', 'swiping-right');
+                }, 80);
+            }, 550);
         }
 
         async function resetAll(skipConfirmation = false) {
-            if (!skipConfirmation && !confirm('Tüm ilerlemeniz ve tarih kayıtlarınız sıfırlansın mı?')) return;
+            if (!skipConfirmation && !confirm('Tüm ilerlemeniz ve tarih kayıtlarınız sıfırlansın mı?')) {
+                return false;
+            }
 
-            try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
-
-            try {
-                const db = await openDatabase();
-                const tx = db.transaction(DB_STORE, 'readwrite');
-                tx.objectStore(DB_STORE).delete('completedData');
-                tx.oncomplete = () => db.close();
-            } catch (e) {}
-
+            // RAM'deki uygulama durumunu hemen sıfırla.
             completedData = {};
             currentIndex = 0;
+
+            const completedCountElement = document.getElementById('completedCount');
+            if (completedCountElement) {
+                completedCountElement.innerText = '0';
+            }
+
             renderApp('left');
+
+            // LocalStorage'ı temizle.
+            try {
+                localStorage.removeItem(STORAGE_KEY);
+            } catch (e) {
+                console.error('LocalStorage sıfırlanamadı:', e);
+            }
+
+            // IndexedDB kaydını gerçekten sil ve işlemin bitmesini bekle.
+            try {
+                const db = await openDatabase();
+
+                await new Promise((resolve, reject) => {
+                    const tx = db.transaction(DB_STORE, 'readwrite');
+                    const request = tx.objectStore(DB_STORE).delete('completedData');
+
+                    request.onerror = () => reject(
+                        request.error || new Error('Kayıt silinemedi.')
+                    );
+
+                    tx.oncomplete = () => resolve();
+
+                    tx.onerror = () => reject(
+                        tx.error || new Error('Sıfırlama işlemi başarısız.')
+                    );
+
+                    tx.onabort = () => reject(
+                        tx.error || new Error('Sıfırlama işlemi iptal edildi.')
+                    );
+                });
+
+                db.close();
+            } catch (e) {
+                console.error('IndexedDB sıfırlanamadı:', e);
+            }
+
+            return true;
         }
 
 
@@ -1065,11 +1461,31 @@
         });
 
         // UYGULAMA DÖNGÜSÜ BAŞLANGICI
+        // Uygulama başlangıcı.
         document.addEventListener('DOMContentLoaded', async function () {
             completedData = await loadCompletedData();
             currentIndex = getInitialIndex();
             renderApp('left');
         });
+
+        // RESET BUTONLARI: olay yakalama ile doğrudan bağlanır.
+        // Böylece inline onclick veya DOMContentLoaded bağlantısına bağımlı değildir.
+        document.addEventListener('click', function (event) {
+            const restartButton = event.target.closest('#restartZikirBtn');
+            if (restartButton) {
+                event.preventDefault();
+                event.stopPropagation();
+                restartZikir();
+                return;
+            }
+
+            const topResetButton = event.target.closest('#topResetBtn');
+            if (topResetButton) {
+                event.preventDefault();
+                event.stopPropagation();
+                resetAll();
+            }
+        }, true);
 
         // DOKUNMATİK KAYDIRMA (SWIPE)
         let touchStartX = 0;
