@@ -888,6 +888,20 @@
         touch-action: manipulation;
     }
     .zikirmatik-add:active { transform: scale(0.97); }
+    .zikirmatik-reset {
+        width: 100%;
+        min-height: 48px;
+        margin-top: 12px;
+        border: 1px solid rgba(255,255,255,0.24);
+        border-radius: 12px;
+        background: #263746;
+        color: #ffffff;
+        font-size: 0.98rem;
+        font-weight: 750;
+        cursor: pointer;
+        touch-action: manipulation;
+    }
+    .zikirmatik-reset:active { transform: scale(0.985); }
     .zikirmatik-box .modal-close {
         background: #2d6a4f;
         margin-top: 14px;
@@ -1144,6 +1158,7 @@
                 <button type="button" class="zikirmatik-add" onclick="addZikir(33)">+33 Zikir</button>
                 <button type="button" class="zikirmatik-add" onclick="addZikir(99)">+99 Zikir</button>
             </div>
+            <button type="button" class="zikirmatik-reset" onclick="resetZikirmatik()">↺ Bu Sayacı Sıfırla</button>
             <button type="button" class="modal-close" onclick="closeZikirmatik()">Kapat</button>
         </div>
     </div>
@@ -1479,6 +1494,19 @@
                 localStorage.setItem(ZIKIRMATIK_STORAGE_KEY, JSON.stringify(zikirmatikCounts));
             } catch (error) {
                 console.error('Zikirmatik sayısı kaydedilemedi:', error);
+            }
+            renderZikirmatik();
+        }
+
+        function resetZikirmatik() {
+            const item = esmalar[currentIndex];
+            if (!item) return;
+            if (!window.confirm(`${item.name} için zikirmatik sayacı sıfırlansın mı?`)) return;
+            delete zikirmatikCounts[String(item.id)];
+            try {
+                localStorage.setItem(ZIKIRMATIK_STORAGE_KEY, JSON.stringify(zikirmatikCounts));
+            } catch (error) {
+                console.error('Zikirmatik sayısı sıfırlanamadı:', error);
             }
             renderZikirmatik();
         }
