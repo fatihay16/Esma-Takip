@@ -810,6 +810,91 @@
 }
 </style>
 
+<style id="zikirmatik-styles">
+
+    /* Zikirmatik ekranı */
+    .zikirmatik-open {
+        width: 100%;
+        margin-top: 12px;
+        padding: 14px 16px;
+        border: 1px solid rgba(82, 183, 136, 0.65);
+        border-radius: 14px;
+        background: linear-gradient(135deg, #2d6a4f, #1b4332);
+        color: #ffffff;
+        font-size: 1rem;
+        font-weight: 800;
+        cursor: pointer;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.22);
+        touch-action: manipulation;
+    }
+    .zikirmatik-open:active { transform: scale(0.985); }
+    .zikirmatik-box {
+        background: linear-gradient(160deg, #0b2236, #102f42);
+        border: 1px solid rgba(255,255,255,0.15);
+        color: #ffffff;
+    }
+    .zikirmatik-box h2 { color: #ffffff; }
+    .zikirmatik-esma {
+        color: #d6e9df;
+        font-size: 0.95rem;
+        margin: 0 0 18px;
+    }
+    .zikirmatik-count {
+        display: flex;
+        width: min(66vw, 250px);
+        aspect-ratio: 1 / 1;
+        margin: 0 auto 18px;
+        border: 3px solid rgba(255,255,255,0.75);
+        border-radius: 50%;
+        background: radial-gradient(circle at 35% 28%, #2d6a4f, #071a2b 72%);
+        color: #ffffff;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 0 0 7px rgba(82,183,136,0.12), 0 0 28px rgba(82,183,136,0.18);
+        cursor: pointer;
+        touch-action: manipulation;
+        user-select: none;
+    }
+    .zikirmatik-count:active { transform: scale(0.97); }
+    .zikirmatik-count-number {
+        font-size: clamp(2.6rem, 12vw, 4rem);
+        font-weight: 800;
+        line-height: 1.1;
+        font-variant-numeric: tabular-nums;
+        overflow-wrap: anywhere;
+        max-width: 90%;
+    }
+    .zikirmatik-count-hint {
+        margin-top: 8px;
+        font-size: 0.85rem;
+        color: #d6e9df;
+    }
+    .zikirmatik-additions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin: 0 0 6px;
+    }
+    .zikirmatik-add {
+        min-height: 58px;
+        border: 1px solid rgba(255,255,255,0.22);
+        border-radius: 14px;
+        background: #ffffff;
+        color: #1b4332;
+        font-size: 1.15rem;
+        font-weight: 800;
+        cursor: pointer;
+        touch-action: manipulation;
+    }
+    .zikirmatik-add:active { transform: scale(0.97); }
+    .zikirmatik-box .modal-close {
+        background: #2d6a4f;
+        margin-top: 14px;
+    }
+
+</style>
+
 </head>
 <body>
 
@@ -1040,6 +1125,26 @@
                 <button class="modal-close" onclick="closeCompletionModal()">Kapat</button>
                 <button type="button" class="modal-reset" id="restartZikirBtn">Sayaçları Sıfırla ve Tekrar Başla</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Seçili Esma için kalıcı zikirmatik -->
+    <div class="modal-overlay" id="zikirmatikModal" role="dialog" aria-modal="true" aria-labelledby="zikirmatikTitle">
+        <div class="modal-box zikirmatik-box">
+            <div class="modal-icon">☾</div>
+            <h2 id="zikirmatikTitle">Zikirmatik</h2>
+            <p class="zikirmatik-esma" id="zikirmatikCurrentEsma">Seçili Esma</p>
+
+            <button type="button" class="zikirmatik-count" onclick="addZikir(1)" aria-label="Sayacı bir artır">
+                <span class="zikirmatik-count-number" id="zikirmatikCount">0</span>
+                <span class="zikirmatik-count-hint">Dokun • +1</span>
+            </button>
+
+            <div class="zikirmatik-additions">
+                <button type="button" class="zikirmatik-add" onclick="addZikir(33)">+33 Zikir</button>
+                <button type="button" class="zikirmatik-add" onclick="addZikir(99)">+99 Zikir</button>
+            </div>
+            <button type="button" class="modal-close" onclick="closeZikirmatik()">Kapat</button>
         </div>
     </div>
 
@@ -1316,6 +1421,7 @@
                     <button class="btn-action" onclick="toggleCurrent()">
                         ${isDone ? '✓ Tamamlandı (Geri Al)' : 'Okudum, İşaretle ve İlerle'}
                     </button>
+                    <button type="button" class="zikirmatik-open" onclick="openZikirmatik()">☾ Zikirmatik Aç</button>
                 </div>
             `;
 
@@ -1331,6 +1437,51 @@
             }
         }
 
+
+        const ZIKIRMATIK_STORAGE_KEY = 'esmaTakipZikirmatikCounts';
+        let zikirmatikCounts = {};
+
+        function loadZikirmatikCounts() {
+            try {
+                const saved = JSON.parse(localStorage.getItem(ZIKIRMATIK_STORAGE_KEY) || '{}');
+                zikirmatikCounts = saved && typeof saved === 'object' ? saved : {};
+            } catch (error) {
+                zikirmatikCounts = {};
+            }
+        }
+
+        function renderZikirmatik() {
+            const item = esmalar[currentIndex];
+            if (!item) return;
+            const label = document.getElementById('zikirmatikCurrentEsma');
+            const count = document.getElementById('zikirmatikCount');
+            if (label) label.textContent = `${item.id}. ${item.name}`;
+            if (count) count.textContent = (Number(zikirmatikCounts[String(item.id)]) || 0).toLocaleString('tr-TR');
+        }
+
+        function openZikirmatik() {
+            renderZikirmatik();
+            const modal = document.getElementById('zikirmatikModal');
+            if (modal) modal.classList.add('show');
+        }
+
+        function closeZikirmatik() {
+            const modal = document.getElementById('zikirmatikModal');
+            if (modal) modal.classList.remove('show');
+        }
+
+        function addZikir(amount) {
+            const item = esmalar[currentIndex];
+            if (!item) return;
+            const key = String(item.id);
+            zikirmatikCounts[key] = (Number(zikirmatikCounts[key]) || 0) + amount;
+            try {
+                localStorage.setItem(ZIKIRMATIK_STORAGE_KEY, JSON.stringify(zikirmatikCounts));
+            } catch (error) {
+                console.error('Zikirmatik sayısı kaydedilemedi:', error);
+            }
+            renderZikirmatik();
+        }
 
         function openInfoModal() {
             const modal = document.getElementById('infoModal');
@@ -1522,9 +1673,16 @@
             if (e.target === this) closeInfoModal();
         });
 
+        document.getElementById('zikirmatikModal')?.addEventListener('click', function(e) {
+            if (e.target === this) closeZikirmatik();
+        });
+
         // ESC sadece bilgi ekranını kapatır; 99 esma ekranı düğme ile kapanır.
         document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') closeInfoModal();
+            if (e.key === 'Escape') {
+                closeInfoModal();
+                closeZikirmatik();
+            }
         });
 
         // UYGULAMA DÖNGÜSÜ BAŞLANGICI
