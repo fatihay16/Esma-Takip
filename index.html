@@ -1586,6 +1586,16 @@
             const currentStatus = completedData[item.id]?.completed === true;
 
             if (!currentStatus) {
+                // Zikirmatik yalnızca elle "Okudum" işaretlendiğinde sıfırlanır.
+                // Sayaç hedefe ulaşınca otomatik tamamlama/işaretleme yapılmaz.
+                delete zikirmatikCounts[String(item.id)];
+                try {
+                    localStorage.setItem(ZIKIRMATIK_STORAGE_KEY, JSON.stringify(zikirmatikCounts));
+                } catch (error) {
+                    console.error('Zikirmatik sayısı sıfırlanamadı:', error);
+                }
+                renderZikirmatik();
+
                 completedData[item.id] = {
                     completed: true,
                     date: new Date().toISOString()
