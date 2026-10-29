@@ -1726,6 +1726,8 @@
         // UYGULAMA DÖNGÜSÜ BAŞLANGICI
         // Uygulama başlangıcı.
         document.addEventListener('DOMContentLoaded', async function () {
+            // Her açılışta cihazda kaydedilmiş zikirmatik sayaçlarını geri yükle.
+            loadZikirmatikCounts();
             completedData = await loadCompletedData();
             currentIndex = getInitialIndex();
             renderApp('left');
