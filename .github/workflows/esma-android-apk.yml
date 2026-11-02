@@ -42,7 +42,10 @@ jobs:
             exit 1
           fi
           yes | "$SDKMANAGER" --licenses || true
-          "$SDKMANAGER" "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+          "$SDKMANAGER" "platform-tools" "platforms;android-35" "build-tools;34.0.0"
+          # Bubblewrap expects sdkmanager under SDK root/bin or SDK root/tools/bin.
+          mkdir -p "$ANDROID_HOME/bin"
+          ln -sf "$(dirname "$SDKMANAGER")/sdkmanager" "$ANDROID_HOME/bin/sdkmanager"
 
       - name: İmzalama anahtarını hazırla
         shell: bash
