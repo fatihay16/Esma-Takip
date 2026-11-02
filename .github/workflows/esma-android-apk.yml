@@ -1,0 +1,78 @@
+name: Esma Takip Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'manifest.json'
+      - 'icons/**'
+      - 'twa-manifest.json'
+      - '.github/workflows/esma-android-apk.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Kaynak kodu indir
+        uses: actions/checkout@v4
+
+      - name: Node.js 22 kur
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Java 17 kur
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Android SDK kur
+        uses: android-actions/setup-android@v3
+
+      - name: İmzalama anahtarını hazırla
+        shell: bash
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ESMA_KEYSTORE_BASE64 }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "::error::ESMA_KEYSTORE_BASE64 GitHub Actions secret tanımlı değil."
+            exit 1
+          fi
+          echo "$KEYSTORE_BASE64" | base64 --decode > android-keystore.jks
+          test -s android-keystore.jks
+
+      - name: Bubblewrap kur
+        run: npm install --global @bubblewrap/cli
+
+      - name: Android projesini oluştur
+        run: |
+          bubblewrap updateConfig --jdkPath="$JAVA_HOME" --androidSdkPath="$ANDROID_HOME"
+          bubblewrap update --skipVersionUpgrade --manifest=./twa-manifest.json
+
+      - name: APK ve AAB derle
+        env:
+          BUBBLEWRAP_KEYSTORE_PASSWORD: ${{ secrets.ESMA_KEYSTORE_PASSWORD }}
+          BUBBLEWRAP_KEY_PASSWORD: ${{ secrets.ESMA_KEY_PASSWORD }}
+          ESMA_KEY_ALIAS: ${{ secrets.ESMA_KEY_ALIAS }}
+        run: |
+          if [ -z "$BUBBLEWRAP_KEYSTORE_PASSWORD" ] || [ -z "$BUBBLEWRAP_KEY_PASSWORD" ] || [ -z "$ESMA_KEY_ALIAS" ]; then
+            echo "::error::ESMA_KEYSTORE_PASSWORD, ESMA_KEY_PASSWORD ve ESMA_KEY_ALIAS secrets tanımlanmalı."
+            exit 1
+          fi
+          bubblewrap build --skipPwaValidation --manifest=./twa-manifest.json --signingKeyPath=./android-keystore.jks --signingKeyAlias="$ESMA_KEY_ALIAS"
+
+      - name: APK ve AAB dosyalarını yükle
+        uses: actions/upload-artifact@v4
+        with:
+          name: esma-takip-android
+          path: |
+            app-release-signed.apk
+            app-release-bundle.aab
+          if-no-files-found: error
+          retention-days: 30
