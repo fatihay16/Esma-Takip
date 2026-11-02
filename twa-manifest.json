@@ -1,0 +1,33 @@
+{
+  "packageId": "io.github.fatihay16.twa",
+  "host": "fatihay16.github.io",
+  "name": "Abdülkadir Geylani Esma Zikri",
+  "launcherName": "Esma Takip",
+  "display": "standalone",
+  "orientation": "portrait",
+  "themeColor": "#1b4332",
+  "themeColorDark": "#1b4332",
+  "navigationColor": "#1b4332",
+  "navigationColorDark": "#1b4332",
+  "backgroundColor": "#f8faf8",
+  "startUrl": "/Esma-Takip/",
+  "iconUrl": "https://raw.githubusercontent.com/fatihay16/Esma-Takip/main/icons/icon-512x512.png",
+  "webManifestUrl": "https://fatihay16.github.io/Esma-Takip/manifest.json",
+  "appVersion": "1.0.1",
+  "appVersionCode": 2,
+  "minSdkVersion": 23,
+  "splashScreenFadeOutDuration": 300,
+  "enableNotifications": false,
+  "enableSiteSettingsShortcut": true,
+  "signingKey": {
+    "path": "./android-keystore.jks",
+    "alias": "placeholder"
+  },
+  "generatorApp": "bubblewrap-cli",
+  "fingerprints": [
+    {
+      "name": "Existing Esma Takip signing key",
+      "value": "9D:23:27:C5:CB:04:AA:3D:30:A5:38:CF:E5:25:51:94:8B:72:91:89:BA:B8:C5:8E:FE:1B:F3:44:E3:54:7B:2F"
+    }
+  ]
+}
