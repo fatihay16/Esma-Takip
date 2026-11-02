@@ -41,8 +41,8 @@ jobs:
             echo "::error::Android SDK sdkmanager bulunamadı."
             exit 1
           fi
-          yes | "$SDKMANAGER" --licenses
-          yes | "$SDKMANAGER" "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+          yes | "$SDKMANAGER" --licenses || true
+          "$SDKMANAGER" "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
       - name: İmzalama anahtarını hazırla
         shell: bash
