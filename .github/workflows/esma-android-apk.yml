@@ -32,14 +32,17 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Android SDK kur
-        uses: android-actions/setup-android@v3
-
-      - name: Gerekli Android paketlerini kur
+      - name: Android SDK paketlerini kur
         shell: bash
         run: |
-          yes | sdkmanager --licenses
-          yes | sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | sort -V | tail -n 1)"
+          if [ -z "$SDKMANAGER" ]; then
+            echo "::error::Android SDK sdkmanager bulunamadı."
+            exit 1
+          fi
+          yes | "$SDKMANAGER" --licenses
+          yes | "$SDKMANAGER" "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
       - name: İmzalama anahtarını hazırla
         shell: bash
