@@ -15,7 +15,7 @@
   "webManifestUrl": "https://fatihay16.github.io/Esma-Takip/manifest.json",
   "appVersion": "1.0.1",
   "appVersionCode": 2,
-  "minSdkVersion": 23,
+  "minSdkVersion": 24,
   "splashScreenFadeOutDuration": 300,
   "enableNotifications": false,
   "enableSiteSettingsShortcut": true,
