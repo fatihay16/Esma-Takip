@@ -59,10 +59,15 @@ jobs:
       - name: Bubblewrap kur
         run: npm install --global @bubblewrap/cli
 
-      - name: Android projesini oluştur
+      - name: Bubblewrap ortamını yapılandır
+        shell: bash
         run: |
-          bubblewrap updateConfig --jdkPath="$JAVA_HOME" --androidSdkPath="$ANDROID_HOME"
-          bubblewrap update --skipVersionUpgrade --manifest=./twa-manifest.json
+          mkdir -p "$HOME/.bubblewrap"
+          printf '{"jdkPath":"%s","androidSdkPath":"%s"}\n' "$JAVA_HOME" "$ANDROID_HOME" > "$HOME/.bubblewrap/config.json"
+          cat "$HOME/.bubblewrap/config.json"
+
+      - name: Android projesini oluştur
+        run: bubblewrap update --skipVersionUpgrade --manifest=./twa-manifest.json
 
       - name: APK ve AAB derle
         env:
