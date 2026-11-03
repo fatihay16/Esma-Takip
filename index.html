@@ -909,6 +909,17 @@
 
 </style>
 
+<style>
+.esma-reset-confirm-overlay{display:none;position:fixed;inset:0;z-index:11000;background:rgba(5,20,14,.78);backdrop-filter:blur(5px);align-items:center;justify-content:center;padding:22px}
+.esma-reset-confirm-overlay.show{display:flex}
+.esma-reset-confirm-box{width:min(100%,340px);box-sizing:border-box;padding:25px 21px 19px;text-align:center;border-radius:22px;background:linear-gradient(155deg,#174b35,#09291e);border:1px solid #d9b65e;color:#fff8e8;box-shadow:0 20px 55px #0007}
+.esma-reset-confirm-box h3{font:normal 21px Georgia,serif;color:#f5d98f;margin:0 0 12px}
+.esma-reset-confirm-box p{font-size:14px;line-height:1.55;margin:0 0 21px}
+.esma-reset-confirm-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.esma-reset-confirm-actions button{border-radius:12px;padding:12px 8px;font-weight:700;font-size:14px;cursor:pointer}
+.esma-reset-confirm-cancel{background:#ffffff12;border:1px solid #ffffff55;color:#fff5dc}
+.esma-reset-confirm-yes{background:linear-gradient(145deg,#f8dfa0,#c99b3d);border:1px solid #e6c66f;color:#173b2a}
+</style>
 </head>
 <body>
 
@@ -1501,13 +1512,27 @@
         function resetZikirmatik() {
             const item = esmalar[currentIndex];
             if (!item) return;
-            if (!window.confirm(`${item.name} için zikirmatik sayacı sıfırlansın mı?`)) return;
+            const message = document.getElementById('esmaResetMessage');
+            if (message) message.textContent = `${item.name} için zikirmatik sayacı sıfırlanacak.`;
+            const modal = document.getElementById('esmaResetConfirm');
+            if (modal) modal.classList.add('show');
+        }
+
+        function closeEsmaResetConfirm() {
+            const modal = document.getElementById('esmaResetConfirm');
+            if (modal) modal.classList.remove('show');
+        }
+
+        function confirmEsmaReset() {
+            const item = esmalar[currentIndex];
+            if (!item) return;
             delete zikirmatikCounts[String(item.id)];
             try {
                 localStorage.setItem(ZIKIRMATIK_STORAGE_KEY, JSON.stringify(zikirmatikCounts));
             } catch (error) {
                 console.error('Zikirmatik sayısı sıfırlanamadı:', error);
             }
+            closeEsmaResetConfirm();
             renderZikirmatik();
         }
 
@@ -1775,5 +1800,15 @@
             });
         }
     </script>
+<div class="esma-reset-confirm-overlay" id="esmaResetConfirm" role="dialog" aria-modal="true" aria-labelledby="esmaResetTitle">
+    <div class="esma-reset-confirm-box">
+        <h3 id="esmaResetTitle">Sayacı sıfırlayalım mı?</h3>
+        <p id="esmaResetMessage">Bu Esma'nın zikirmatik sayacı sıfırlanacak.</p>
+        <div class="esma-reset-confirm-actions">
+            <button type="button" class="esma-reset-confirm-cancel" onclick="closeEsmaResetConfirm()">Vazgeç</button>
+            <button type="button" class="esma-reset-confirm-yes" onclick="confirmEsmaReset()">Evet, sıfırla</button>
+        </div>
+    </div>
+</div>
 </body>
 </html>
