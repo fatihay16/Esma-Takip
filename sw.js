@@ -1,4 +1,4 @@
-const CACHE_NAME = 'esma-v5'; // Önbellek sürümünü güncelledik
+const CACHE_NAME = 'esma-v6'; // Önbellek sürümünü güncelledik
 
 const STATIC_ASSETS = [
     './',
