@@ -5,7 +5,7 @@
     ],
     "target": {
       "namespace": "android_app",
-      "package_name": "io.github.fatihay16.twa",
+      "package_name": "com.feyz.esmatakip",
       "sha256_cert_fingerprints": [
         "96:EF:84:07:43:70:2B:89:35:93:5E:07:F9:D6:84:30:B9:0F:78:E7:53:43:49:B6:E6:E2:8D:2E:A0:22:3B:04"
       ]
