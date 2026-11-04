@@ -1793,10 +1793,29 @@
             }, { passive: true });
         }
 
-        // SERVICE WORKER KAYDI
+        // SERVICE WORKER: yeni sürümü kontrol et ve hazır olduğunda güvenli yenile
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js').catch(() => {});
+            window.addEventListener('load', async () => {
+                const hadController = Boolean(navigator.serviceWorker.controller);
+                let refreshing = false;
+
+                // İlk kurulumda gereksiz yenileme yapma; sonraki sürümlerde
+                // yeni Service Worker kontrolü devralınca sayfayı bir kez yenile.
+                navigator.serviceWorker.addEventListener('controllerchange', () => {
+                    if (hadController && !refreshing) {
+                        refreshing = true;
+                        window.location.reload();
+                    }
+                });
+
+                try {
+                    const registration = await navigator.serviceWorker.register('./sw.js');
+                    // Her uygulama açılışında sunucuda yeni sürüm var mı diye bir kez bak.
+                    await registration.update();
+                } catch (error) {
+                    // Güncelleme kontrolü başarısız olsa bile mevcut uygulama çalışmaya devam eder.
+                    console.warn('Güncelleme kontrolü yapılamadı:', error);
+                }
             });
         }
     </script>
